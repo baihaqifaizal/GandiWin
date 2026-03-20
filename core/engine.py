@@ -67,7 +67,7 @@ def rollback_session(session_id: str) -> list:
     return results
 
 
-def check_tweak_applied(tweak: dict) -> bool:
+def check_tweak_applied(tweak: dict) -> bool | str:
     tweak_type = tweak.get("type", "")
     actions = tweak.get("actions", [])
     if not actions:
@@ -75,30 +75,39 @@ def check_tweak_applied(tweak: dict) -> bool:
 
     try:
         if tweak_type == "registry":
+            all_missing = True
             for act in actions:
                 current = executor.read_registry_value(act["path"], act["key"])
-                if current != act["value"]:
-                    return False
-            return True
+                if current is not None:
+                    all_missing = False
+                    if current != act["value"]:
+                        return False
+            return "missing" if all_missing else True
 
         elif tweak_type == "service":
-            for act in actions:
-                start_type = executor.get_service_start_type(act["service"])
-                if act["state"] == "disabled" and start_type != 4:
-                    return False
-                elif act["state"] == "manual" and start_type != 3:
-                    return False
-                elif act["state"] == "automatic" and start_type not in (1, 2):
-                    return False
+            # For services, we check the first action's service availability
+            act = actions[0]
+            start_type = executor.get_service_start_type(act["service"])
+            if start_type == -1:
+                return "missing"
+            
+            if act["state"] == "disabled" and start_type != 4:
+                return False
+            elif act["state"] == "manual" and start_type != 3:
+                return False
+            elif act["state"] == "automatic" and start_type not in (1, 2):
+                return False
             return True
 
         elif tweak_type == "task":
-            for act in actions:
-                if act["state"] == "disable":
-                    r = executor._run_process(f'schtasks /Query /TN "{act["task_path"]}" /FO CSV /NH', "cmd")
-                    if "Disabled" in (r.message or ""):
-                        continue
-                    return False
+            # Check first task in actions
+            act = actions[0]
+            r = executor._run_process(f'schtasks /Query /TN "{act["task_path"]}" /FO CSV /NH', "cmd")
+            if not r.success:
+                return "missing"
+            
+            if act["state"] == "disable" and "Disabled" not in (r.message or ""):
+                return False
             return True
 
         elif tweak_type == "appx":
@@ -106,11 +115,19 @@ def check_tweak_applied(tweak: dict) -> bool:
                 "Get-AppxPackage | Select-Object -ExpandProperty Name", "powershell"
             )
             installed = set((r.message or "").lower().split("\n"))
+            all_not_found = True
+            found_any = False
             for act in actions:
                 pkg = act["package"].lower()
                 if any(pkg in p for p in installed):
-                    return False
-            return True
+                    found_any = True
+                    all_not_found = False
+            
+            # If any package is still installed, it's NOT applied (False)
+            if found_any:
+                return False
+            # If no packages found at all, it's missing
+            return "missing"
 
     except Exception:
         pass

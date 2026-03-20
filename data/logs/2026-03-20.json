@@ -1,0 +1,98 @@
+[
+  {
+    "timestamp": "2026-03-20T11:52:30.911",
+    "action": "apply",
+    "tweak_id": "disable_delivery_optimization",
+    "result": "success",
+    "message": "Registry: 1 value(s) set",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T12:34:03.570",
+    "action": "apply",
+    "tweak_id": "disable_hibernation",
+    "result": "fail",
+    "message": "CMD: 1 error(s)",
+    "error": "'powercfg' is not recognized as an internal or external command,\noperable program or batch file."
+  },
+  {
+    "timestamp": "2026-03-20T12:34:57.896",
+    "action": "apply",
+    "tweak_id": "remove_game_bar_dvr",
+    "result": "success",
+    "message": "Registry: 3 value(s) set",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T12:35:04.862",
+    "action": "apply",
+    "tweak_id": "change_dns_cloudflare",
+    "result": "fail",
+    "message": "PowerShell: 1 error(s)",
+    "error": "[WinError 2] The system cannot find the file specified"
+  },
+  {
+    "timestamp": "2026-03-20T12:35:18.203",
+    "action": "rollback",
+    "tweak_id": "change_dns_cloudflare",
+    "result": "fail",
+    "message": "PowerShell: 1 error(s)",
+    "error": "[WinError 2] The system cannot find the file specified"
+  },
+  {
+    "timestamp": "2026-03-20T12:44:37.165",
+    "action": "apply",
+    "tweak_id": "disable_hibernation",
+    "result": "success",
+    "message": "CMD: 1 command(s) executed",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T12:45:35.568",
+    "action": "apply",
+    "tweak_id": "disable_usb_selective_suspend",
+    "result": "success",
+    "message": "Registry: 1 value(s) set",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T12:45:47.969",
+    "action": "apply",
+    "tweak_id": "fix_quick_access",
+    "result": "success",
+    "message": "Registry: 2 value(s) set",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T12:45:50.916",
+    "action": "apply",
+    "tweak_id": "ultimate_performance",
+    "result": "success",
+    "message": "CMD: 2 command(s) executed",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T20:20:07.552",
+    "action": "rollback",
+    "tweak_id": "w11d_DisableTransparency",
+    "result": "fail",
+    "message": "No backup for w11d_DisableTransparency",
+    "error": "Backup not found"
+  },
+  {
+    "timestamp": "2026-03-20T20:42:25.066",
+    "action": "apply",
+    "tweak_id": "disable_mouse_acceleration",
+    "result": "success",
+    "message": "Registry: 3 value(s) set",
+    "error": null
+  },
+  {
+    "timestamp": "2026-03-20T20:42:32.257",
+    "action": "rollback",
+    "tweak_id": "disable_mouse_acceleration",
+    "result": "success",
+    "message": "Registry: 3 value(s) set",
+    "error": null
+  }
+]

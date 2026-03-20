@@ -1,0 +1,22 @@
+{
+  "before": {
+    "boot_time_sec": 0.0,
+    "ram_idle_gb": 4.6,
+    "cpu_idle_pct": 2.3,
+    "disk_write_mbps": 256.2,
+    "disk_read_mbps": 2988.4,
+    "ping_google_ms": 26.0,
+    "ping_cloudflare_ms": 28.0,
+    "timestamp": "2026-03-20T12:46:47"
+  },
+  "after": {
+    "boot_time_sec": 0.0,
+    "ram_idle_gb": 4.4,
+    "cpu_idle_pct": 0.4,
+    "disk_write_mbps": 433.8,
+    "disk_read_mbps": 3002.8,
+    "ping_google_ms": 29.0,
+    "ping_cloudflare_ms": 25.0,
+    "timestamp": "2026-03-20T12:47:03"
+  }
+}

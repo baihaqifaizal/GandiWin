@@ -1,0 +1,110 @@
+{
+  "session_id": "2026-03-20_11-52-30",
+  "tweaks": {
+    "disable_delivery_optimization": {
+      "type": "registry",
+      "original_values": [
+        {
+          "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+          "key": "DODownloadMode",
+          "value": null,
+          "reg_type": "DWORD"
+        }
+      ],
+      "timestamp": "2026-03-20T11:52:30.910"
+    },
+    "disable_hibernation": {
+      "type": "cmd",
+      "rollback_cmd": "powercfg -h on",
+      "timestamp": "2026-03-20T12:44:37.136"
+    },
+    "remove_game_bar_dvr": {
+      "type": "registry",
+      "original_values": [
+        {
+          "path": "HKCU\\System\\GameConfigStore",
+          "key": "GameDVR_Enabled",
+          "value": 0,
+          "reg_type": "DWORD"
+        },
+        {
+          "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+          "key": "AllowGameDVR",
+          "value": null,
+          "reg_type": "DWORD"
+        },
+        {
+          "path": "HKCU\\SOFTWARE\\Microsoft\\GameBar",
+          "key": "AllowAutoGameMode",
+          "value": null,
+          "reg_type": "DWORD"
+        }
+      ],
+      "timestamp": "2026-03-20T12:34:57.895"
+    },
+    "change_dns_cloudflare": {
+      "type": "powershell",
+      "rollback_cmd": "$adapter = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -First 1; if ($adapter) { Set-DnsClientServerAddress -InterfaceIndex $adapter.ifIndex -ResetServerAddresses }",
+      "timestamp": "2026-03-20T12:35:04.855"
+    },
+    "disable_usb_selective_suspend": {
+      "type": "registry",
+      "original_values": [
+        {
+          "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\USB",
+          "key": "DisableSelectiveSuspend",
+          "value": null,
+          "reg_type": "DWORD"
+        }
+      ],
+      "timestamp": "2026-03-20T12:45:35.567"
+    },
+    "fix_quick_access": {
+      "type": "registry",
+      "original_values": [
+        {
+          "path": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+          "key": "ShowRecent",
+          "value": 0,
+          "reg_type": "DWORD"
+        },
+        {
+          "path": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+          "key": "ShowFrequent",
+          "value": null,
+          "reg_type": "DWORD"
+        }
+      ],
+      "timestamp": "2026-03-20T12:45:47.968"
+    },
+    "ultimate_performance": {
+      "type": "cmd",
+      "rollback_cmd": "powercfg /setactive SCHEME_BALANCED",
+      "timestamp": "2026-03-20T12:45:50.840"
+    },
+    "disable_mouse_acceleration": {
+      "type": "registry",
+      "original_values": [
+        {
+          "path": "HKCU\\Control Panel\\Mouse",
+          "key": "MouseSpeed",
+          "value": "1",
+          "reg_type": "SZ"
+        },
+        {
+          "path": "HKCU\\Control Panel\\Mouse",
+          "key": "MouseThreshold1",
+          "value": "6",
+          "reg_type": "SZ"
+        },
+        {
+          "path": "HKCU\\Control Panel\\Mouse",
+          "key": "MouseThreshold2",
+          "value": "10",
+          "reg_type": "SZ"
+        }
+      ],
+      "timestamp": "2026-03-20T20:42:25.065"
+    }
+  }
+}

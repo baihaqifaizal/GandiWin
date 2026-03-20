@@ -50,9 +50,52 @@ def main():
         print("[GandiWin] Done.")
         return
 
-    from gui.app import GandiWinApp
-    app = GandiWinApp()
-    app.mainloop()
+    import customtkinter as ctk
+    from gui.theme import get_colors, set_theme, load_config, load_translations
+    
+    config = load_config()
+    set_theme(config.get("theme", "dark"))
+    load_translations(config.get("language", "id"))
+    ctk.set_appearance_mode("dark" if config.get("theme", "dark") == "dark" else "light")
+
+    from gui.splash import SplashScreen
+    from tweaks.phase1 import PHASE1_TWEAKS
+    from tweaks.win11debloat import WIN11_DEBLOAT_TWEAKS
+    from core import engine
+
+    all_tweaks = PHASE1_TWEAKS + WIN11_DEBLOAT_TWEAKS
+    precheck_results = {}
+
+    def run_check(progress_cb):
+        from core import executor
+        total = len(all_tweaks) + 1  # +1 for appx check
+        
+        # 1. Check tweaks
+        for i, tweak in enumerate(all_tweaks):
+            try:
+                applied = engine.check_tweak_applied(tweak)
+                precheck_results[tweak["id"]] = applied
+            except Exception:
+                precheck_results[tweak["id"]] = False
+            progress_cb(i + 1, total, f"Checking: {tweak['name'][:40]}...")
+
+        # 2. Check installed apps
+        progress_cb(total, total, "Checking installed apps...")
+        r = executor._run_process("Get-AppxPackage | Select-Object -ExpandProperty Name", "powershell")
+        if r.success and r.message:
+            # Store as set for O(1) lookup
+            precheck_results["installed_apps"] = set(r.message.lower().split("\n"))
+        else:
+            precheck_results["installed_apps"] = set()
+
+    def launch_app():
+        from gui.app import GandiWinApp
+        app = GandiWinApp(precheck_results=precheck_results)
+        app.mainloop()
+
+    splash = SplashScreen(on_complete=launch_app)
+    splash.start_check(run_check)
+    splash.mainloop()
 
 
 if __name__ == "__main__":

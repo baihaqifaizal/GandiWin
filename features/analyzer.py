@@ -9,6 +9,7 @@ except ImportError:
     psutil = None
 
 from core import sysinfo
+from core import executor
 
 
 @dataclass
@@ -71,7 +72,7 @@ class SystemAnalyzer:
     def scan_services(self) -> list:
         running = []
         for svc_name in SAFE_TO_DISABLE_SERVICES:
-            if sysinfo.is_service_running(svc_name):
+            if executor.is_service_running(svc_name):
                 running.append(svc_name)
         return running
 
@@ -137,7 +138,7 @@ class SystemAnalyzer:
                     applied += 1
             elif t["type"] == "service" and t["actions"]:
                 act = t["actions"][0]
-                if not sysinfo.is_service_running(act["service"]):
+                if not executor.is_service_running(act["service"]):
                     applied += 1
         return {"applied": applied, "total": total, "pct": round(applied / max(total, 1) * 100)}
 

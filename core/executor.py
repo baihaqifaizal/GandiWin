@@ -13,12 +13,16 @@ except ImportError:
 
 def _run_process(cmd: str, shell: str = "cmd") -> Result:
     try:
+        env = os.environ.copy()
+        if "PATH" in env:
+            env["PATH"] = os.path.expandvars(env["PATH"])
+            
         if shell == "powershell":
             args = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd]
         else:
             args = ["cmd", "/c", cmd]
         proc = subprocess.run(
-            args, capture_output=True, text=True, timeout=120, creationflags=subprocess.CREATE_NO_WINDOW
+            args, capture_output=True, text=True, timeout=120, creationflags=subprocess.CREATE_NO_WINDOW, env=env
         )
         if proc.returncode == 0:
             return Result.ok(proc.stdout.strip() if proc.stdout else "Command executed")
@@ -162,13 +166,16 @@ def apply_appx_tweak(actions: list) -> Result:
     errors = []
     for act in actions:
         pkg = act["package"]
-        cmd = f"Get-AppxPackage '*{pkg}*' | Remove-AppxPackage -ErrorAction SilentlyContinue"
+        if act.get("install"):
+            cmd = f"Get-AppxPackage -AllUsers -Name '*{pkg}*' | Foreach {{Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\\AppXManifest.xml\" -ErrorAction SilentlyContinue}}"
+        else:
+            cmd = f"Get-AppxPackage '*{pkg}*' | Remove-AppxPackage -ErrorAction SilentlyContinue"
         r = _run_process(cmd, "powershell")
         if not r.success:
             errors.append(f"{pkg}: {r.error or r.message}")
     if errors:
         return Result.fail("; ".join(errors), f"Appx: {len(errors)} error(s)")
-    return Result.ok(f"Appx: {len(actions)} package(s) removed")
+    return Result.ok(f"Appx: {len(actions)} package(s) processed")
 
 
 def get_service_start_type(service_name: str) -> int:

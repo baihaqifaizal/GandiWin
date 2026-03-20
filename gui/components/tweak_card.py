@@ -3,14 +3,15 @@ from gui.theme import get_colors, FONTS, SPACING, RISK_DOT
 
 
 class TweakCard(ctk.CTkFrame):
+    _active_tooltip_win = None
+    _active_tooltip_id = None
+
     def __init__(self, parent, tweak: dict, on_toggle=None, **kwargs):
         colors = get_colors()
         super().__init__(parent, fg_color=colors["bg_card"], corner_radius=10, **kwargs)
         self.tweak = tweak
         self.on_toggle = on_toggle
         self._enabled = False
-        self._tooltip_win = None
-        self._tooltip_after_id = None
 
         self.grid_columnconfigure(1, weight=1)
 
@@ -61,8 +62,15 @@ class TweakCard(ctk.CTkFrame):
     def _on_enter(self, event=None):
         colors = get_colors()
         self.configure(fg_color=colors["bg_hover"])
-        if self._tooltip_after_id is None and self._tooltip_win is None:
-            self._tooltip_after_id = self.after(400, self._create_tooltip)
+        if event:
+            self._last_x = event.x_root
+            self._last_y = event.y_root
+        else:
+            self._last_x = self.winfo_rootx() + 50
+            self._last_y = self.winfo_rooty() + 10
+
+        TweakCard._kill_tooltip(self)
+        TweakCard._active_tooltip_id = self.after(400, self._create_tooltip)
 
     def _on_leave(self, event=None):
         colors = get_colors()
@@ -73,11 +81,11 @@ class TweakCard(ctk.CTkFrame):
         if event and rx <= event.x_root <= rx + rw and ry <= event.y_root <= ry + rh:
             return
 
-        self._kill_tooltip()
+        TweakCard._kill_tooltip(self)
 
     def _create_tooltip(self):
-        self._tooltip_after_id = None
-        if self._tooltip_win is not None:
+        TweakCard._active_tooltip_id = None
+        if TweakCard._active_tooltip_win is not None:
             return
 
         desc = self.tweak.get("description", "")
@@ -89,7 +97,7 @@ class TweakCard(ctk.CTkFrame):
             return
 
         colors = get_colors()
-        self._tooltip_win = tw = ctk.CTkToplevel(self)
+        TweakCard._active_tooltip_win = tw = ctk.CTkToplevel(self)
         tw.wm_overrideredirect(True)
         tw.configure(fg_color=colors["bg_secondary"])
         tw.attributes("-topmost", True)
@@ -106,30 +114,42 @@ class TweakCard(ctk.CTkFrame):
         )
         lbl.pack(padx=SPACING["sm"], pady=SPACING["sm"])
 
-        x = self.winfo_rootx() + self.winfo_width() + 8
-        y = self.winfo_rooty()
+        x = getattr(self, "_last_x", self.winfo_rootx() + 50) + 16
+        y = getattr(self, "_last_y", self.winfo_rooty() + 10) + 16
 
         tw.geometry(f"+{x}+{y}")
         tw.update_idletasks()
 
         screen_w = self.winfo_screenwidth()
-        if x + tw.winfo_width() > screen_w:
-            x = self.winfo_rootx() - tw.winfo_width() - 8
-            tw.geometry(f"+{x}+{y}")
+        screen_h = self.winfo_screenheight()
+        
+        tw_w = tw.winfo_width()
+        tw_h = tw.winfo_height()
+
+        if x + tw_w > screen_w:
+            x = max(0, screen_w - tw_w - 8)
+        if y + tw_h > screen_h:
+            y = max(0, screen_h - tw_h - 8)
+            
+        tw.geometry(f"+{x}+{y}")
 
     def _kill_tooltip(self):
-        if self._tooltip_after_id is not None:
-            self.after_cancel(self._tooltip_after_id)
-            self._tooltip_after_id = None
-        if self._tooltip_win is not None:
+        if hasattr(self, "after_cancel") and TweakCard._active_tooltip_id is not None:
             try:
-                self._tooltip_win.destroy()
+                self.after_cancel(TweakCard._active_tooltip_id)
             except Exception:
                 pass
-            self._tooltip_win = None
+            TweakCard._active_tooltip_id = None
+            
+        if TweakCard._active_tooltip_win is not None:
+            try:
+                TweakCard._active_tooltip_win.destroy()
+            except Exception:
+                pass
+            TweakCard._active_tooltip_win = None
 
     def destroy(self):
-        self._kill_tooltip()
+        TweakCard._kill_tooltip(self)
         super().destroy()
 
     def _on_switch(self):
@@ -143,6 +163,25 @@ class TweakCard(ctk.CTkFrame):
             self.toggle.select()
         else:
             self.toggle.deselect()
+
+    def set_disabled(self, is_disabled: bool):
+        colors = get_colors()
+        if is_disabled:
+            self.toggle.configure(
+                state="disabled",
+                progress_color=colors["text_muted"],
+                button_color=colors["text_muted"]
+            )
+            self.toggle.select() # Per user request: "tercentang tapi grey"
+            self._name_label.configure(text_color="grey")
+            self.configure(fg_color=colors["bg_card"]) # Reset hover if any
+        else:
+            self.toggle.configure(
+                state="normal",
+                progress_color=colors["accent"],
+                button_color=colors["text_secondary"]
+            )
+            self._name_label.configure(text_color=colors["text_primary"])
 
 
 class RiskFooter(ctk.CTkFrame):

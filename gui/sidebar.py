@@ -4,9 +4,10 @@ from gui.theme import get_colors, FONTS, SPACING, t
 
 class Sidebar(ctk.CTkFrame):
     ITEMS = [
-        ("phase1", "nav.phase1", "🔧"),
-        ("phase2", "nav.phase2", "⚙"),
-        ("phase4", "nav.phase4", "🌐"),
+        ("system_tweaks", "nav.system_tweaks", "🔧"),
+        ("app_removal", "nav.app_removal", "🗑"),
+        ("privacy", "nav.privacy", "👁"),
+        ("maintenance", "nav.maintenance", "🧹"),
         ("ghost", "nav.ghost", "👻"),
         ("analyzer", "nav.analyzer", "🔍"),
         ("benchmark", "nav.benchmark", "📊"),

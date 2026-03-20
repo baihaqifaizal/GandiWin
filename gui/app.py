@@ -11,14 +11,13 @@ from gui.panels.panel_benchmark import BenchmarkPanel
 from gui.panels.panel_settings import SettingsPanel
 
 
-class GandiWinApp(ctk.CTk):
-    def __init__(self):
-        super().__init__()
+from gui.panels.panel_app_removal import AppRemovalPanel
 
-        config = load_config()
-        set_theme(config.get("theme", "dark"))
-        load_translations(config.get("language", "id"))
-        ctk.set_appearance_mode("dark" if config.get("theme", "dark") == "dark" else "light")
+
+class GandiWinApp(ctk.CTk):
+    def __init__(self, precheck_results=None):
+        super().__init__()
+        self.precheck_results = precheck_results or {}
 
         self.title("GandiWin — Windows Optimization Toolkit")
         self.geometry("1100x700")
@@ -45,8 +44,8 @@ class GandiWinApp(ctk.CTk):
         self._panels = {}
         self._current_panel = None
 
-        self._navigate("phase1")
-        self.sidebar.set_active("phase1")
+        self._navigate("system_tweaks")
+        self.sidebar.set_active("system_tweaks")
 
     def _navigate(self, key: str):
         if self._current_panel:
@@ -62,9 +61,10 @@ class GandiWinApp(ctk.CTk):
 
     def _create_panel(self, key: str):
         panel_map = {
-            "phase1": lambda: Phase1Panel(self.content_frame, log_panel=self.log_panel),
-            "phase2": lambda: Phase2Panel(self.content_frame, log_panel=self.log_panel),
-            "phase4": lambda: Phase4Panel(self.content_frame, log_panel=self.log_panel),
+            "system_tweaks": lambda: Phase1Panel(self.content_frame, log_panel=self.log_panel, precheck_results=self.precheck_results),
+            "app_removal": lambda: AppRemovalPanel(self.content_frame, log_panel=self.log_panel, precheck_results=self.precheck_results),
+            "privacy": lambda: Phase2Panel(self.content_frame, log_panel=self.log_panel, precheck_results=self.precheck_results),
+            "maintenance": lambda: Phase4Panel(self.content_frame, log_panel=self.log_panel, precheck_results=self.precheck_results),
             "ghost": lambda: GhostPanel(self.content_frame, log_panel=self.log_panel),
             "analyzer": lambda: AnalyzerPanel(self.content_frame, log_panel=self.log_panel),
             "benchmark": lambda: BenchmarkPanel(self.content_frame, log_panel=self.log_panel),

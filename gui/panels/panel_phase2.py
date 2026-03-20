@@ -8,10 +8,11 @@ from core import engine
 
 
 class Phase2Panel(ctk.CTkScrollableFrame):
-    def __init__(self, parent, log_panel=None, **kwargs):
+    def __init__(self, parent, log_panel=None, precheck_results=None, **kwargs):
         colors = get_colors()
         super().__init__(parent, fg_color=colors["bg_primary"], corner_radius=0, **kwargs)
         self.log_panel = log_panel
+        self.precheck_results = precheck_results or {}
 
         header = ctk.CTkLabel(
             self, text=t("nav.phase2", "Fase 2 — Kernel"),
@@ -37,17 +38,18 @@ class Phase2Panel(ctk.CTkScrollableFrame):
 
         RiskFooter(self).pack(fill="x", padx=SPACING["lg"], pady=(SPACING["md"], SPACING["sm"]))
 
-        threading.Thread(target=self._detect_states, daemon=True).start()
+        self._apply_precheck()
 
-    def _detect_states(self):
+    def _apply_precheck(self):
         for tweak in PHASE2_TWEAKS:
-            try:
-                applied = engine.check_tweak_applied(tweak)
-                card = self.cards.get(tweak["id"])
-                if card and applied:
-                    self.after(0, lambda c=card: c.set_state(True))
-            except Exception:
-                pass
+            res = self.precheck_results.get(tweak["id"], False)
+            card = self.cards.get(tweak["id"])
+            if card:
+                if res == "missing":
+                    card.set_disabled(True)
+                elif res is True:
+                    card.set_state(True)
+
 
     def _on_toggle(self, tweak, enabled):
         if enabled:
