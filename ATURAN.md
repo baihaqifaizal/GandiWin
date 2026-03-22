@@ -399,6 +399,20 @@ COLOR SCHEME (Managed by GandiWinUI):
   White      : Body text
 ```
 
+### 6.8 Centralized Logging Strategy (DAEMON MODE)
+
+```powershell
+MANDATORY LOGGING RULE:
+  ✅ ALL feature scripts inside `features/` MUST write their activity logs to the specific file `$PSScriptRoot\..\..\logs\menu.log` (or effectively the central `menu.log`).
+  ✅ `log_viewer.ps1` operates STRICTLY in Daemon Mode (continuous monitoring via `Get-Content -Wait`).
+  ❌ NO interactive inputs inside `log_viewer.ps1`. It sits passively, looping and watching `menu.log`.
+
+EXAMPLE implementation inside a feature:
+  $LogFile = "$PSScriptRoot\..\..\logs\menu.log"
+  $Timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+  Add-Content -Path $LogFile -Value "[$Timestamp] [INFO] Feature X executed."
+```
+
 ---
 
 ## 7. LAUNCHER SPECIFICATION
@@ -509,6 +523,16 @@ goto :menu
 
 ❌ $ErrorActionPreference = "Stop"  # Wrong: global setting
 ✅ -ErrorAction Stop                # Correct: per-command
+
+❌ if ($_ -strip)                   # Wrong: -strip is NOT a valid operator (causes parse error)
+✅ if ($_ -ne '')                   # Correct: explicit empty string check
+
+❌ function Log-Activity { ... }    # Wrong: 'Log' is NOT an approved PowerShell verb (PSScriptAnalyzer warning + breaks discoverability)
+✅ function Write-ActivityLog { ... } # Correct: 'Write' is an approved verb
+
+❌ switch ($x) { 'val' { continue } }   # Wrong: continue inside switch targets the switch, NOT the enclosing while loop
+✅ switch ($x) { 'val' { $DoRescan = $true } }
+   if ($DoRescan) { continue }          # Correct: flag variable breaks out of switch first, then continue targets while
 ```
 
 ### 8.3 Path & Encoding Sins
