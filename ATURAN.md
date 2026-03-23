@@ -70,6 +70,7 @@ NO:        VBScript, JavaScript, C#, .NET assemblies
 ✅ Logging terstruktur ke folder logs/
 ✅ Multi-terminal architecture
 ✅ Interactive menu dengan hacker-style UI
+✅ PowerShell preferred over CMD untuk fleksibilitas dan kemampuan penuh
 ```
 
 ### 2.3 Terminal Architecture (4 TERMINALS)
@@ -120,11 +121,11 @@ GandiWin/
 │
 ├── features/                     # MUST: Feature modules folder
 │   ├── 1_thermal_check/
-│   │   └── 1_thermal_check.cmd
+│   │   └── 1_thermal_check.ps1
 │   ├── 2_antivirus_conflict/
-│   │   └── 2_antivirus_conflict.cmd
+│   │   └── 2_antivirus_conflict.ps1
 │   ├── 3_bloatware_removal/
-│   │   └── 3_bloatware_removal.cmd
+│   │   └── 3_bloatware_removal.ps1
 │   └── ... (30 folders total)
 │
 ├── modules/                      # OPTIONAL: PowerShell helper modules
@@ -150,19 +151,25 @@ EXAMPLE:
 RULES:
   - Number MUST be 1-30 (no leading zeros in folder name)
   - Slug MUST be lowercase with underscores
-  - Script file MUST match folder name with .cmd extension
+  - Script file MUST match folder name with .ps1 extension
 ```
 
 ### 3.3 Script File Naming
 
 ```
 INSIDE features/{number}_{slug}/:
-  {number}_{slug}.cmd    # Main feature script (Windows PowerShell compatible)
+  {number}_{slug}.ps1    # Main feature script (PowerShell 5.1+)
+
+ALLOWED:
+  - Additional helper .ps1 files in subfolders (e.g., Scripts/, Modules/)
+  - External executables (.exe, .bat) if required for specific functionality
+  - Configuration files (.json, .xml, .reg)
+  - Documentation (.md)
 
 NOT ALLOWED:
-  - .ps1 inside features/ (use .cmd for compatibility)
-  - Multiple scripts per feature folder
+  - .cmd inside features/ (PowerShell .ps1 is preferred for flexibility)
   - Uppercase in filenames
+  - Hardcoded absolute paths
 ```
 
 ---
@@ -199,7 +206,7 @@ Invoke-Expression script.ps1             # Wrong execution method
 
 ```
 1. User selects feature number (1-30) in universal_menu.ps1
-2. Script constructs path: features/{number}_{slug}/{number}_{slug}.cmd
+2. Script constructs path: features/{number}_{slug}/{number}_{slug}.ps1
 3. Launch with: Start-Process powershell -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", "$ScriptPath"
 4. Log activity: Log-Activity "TWEAK INITIATED: #N - Feature Name"
 5. Feature runs in NEW terminal window
@@ -247,36 +254,56 @@ Invoke-Expression script.ps1             # Wrong execution method
 
 ### 5.2 Feature Script Template (MANDATORY)
 
-```batch
-@echo off
-title GANDIWIN :: FEATURE_NAME
-color 0A
+```powershell
+# WAJIB ada di setiap script utama (Rule 1.4)
+$MinPSVersion = [Version]"5.1"
+if ($PSVersionTable.PSVersion -lt $MinPSVersion) {
+    Write-Host "[ERROR] PowerShell 5.1+ required!" -ForegroundColor Red
+    Write-Host "Current version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+    pause
+    exit 1
+}
 
-set "BASEDIR=%~dp0"
-set "LogsDir=%BASEDIR%..\logs"
-set "ActivityLog=%LogsDir%\tweak_activity.log"
+# Import UI Module
+$UIModule = "$PSScriptRoot\..\..\modules\GandiWinUI.psm1"
+if (Test-Path $UIModule) { Import-Module $UIModule -Force }
 
-if not exist "%LogsDir%" mkdir "%LogsDir%"
+# Setup terminal
+Set-GandiConsole -Title "GANDIWIN :: FEATURE_NAME"
 
-echo.
-echo ========================================
-echo   FEATURE_NAME - Description
-echo ========================================
-echo.
+# Logging setup
+$LogFile = "$PSScriptRoot\..\..\logs\menu.log"
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $Timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $LogMsg = "[$Timestamp] [$Level] [N_FEATURE] $Message"
+    try { Add-Content -Path $LogFile -Value $LogMsg -ErrorAction SilentlyContinue } catch {}
+}
 
-:: Feature logic here
-echo [*] Running feature...
+# Main script header
+Show-GandiHeader -Title "NN FEATURE_NAME"
 
-:: Log activity
-echo [%DATE% %TIME%] FEATURE_NAME: Executed >> "%ActivityLog%"
+# Feature logic here
+Write-GandiStatus -Status "INFO" -Message "Running feature..."
 
-echo.
-echo ========================================
-echo   Complete!
-echo ========================================
-echo.
-pause
-exit /b 0
+# Log activity
+Write-ActivityLog "FEATURE_NAME: Executed"
+
+# Completion
+Write-Host ""
+Write-Host "  Feature complete!" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Press any key to exit..." -ForegroundColor Gray
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+```
+
+BENEFITS OF POWERSHELL OVER CMD:
+  ✅ Full access to .NET Framework and WMI/CIM
+  ✅ Better error handling with try/catch
+  ✅ Rich UI capabilities via GandiWinUI module
+  ✅ Easier to maintain and extend
+  ✅ Better logging capabilities
+  ✅ Cross-version compatibility (PS 5.1+)
 ```
 
 ---
@@ -303,17 +330,18 @@ NEVER: Close-Host in scripts (kills terminal)
 ### 6.3 Logging Requirements
 
 ```powershell
-# EVERY feature MUST log:
-function Log-Activity {
-    param([string]$Message)
+# EVERY feature MUST log to central menu.log:
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "[$Timestamp] $Message" | Out-File -FilePath $ActivityLog -Append -Encoding UTF8
+    $LogMsg = "[$Timestamp] [$Level] [N_FEATURE] $Message"
+    try { Add-Content -Path $LogFile -Value $LogMsg -ErrorAction SilentlyContinue } catch {}
 }
 
 # Log at minimum:
-Log-Activity "TWEAK INITIATED: #N - Feature Name"
-Log-Activity "TWEAK COMPLETE: #N - Feature Name"
-Log-Activity "ERROR: #N - Error description"  # If error occurs
+Write-ActivityLog "TWEAK INITIATED: #N - Feature Name"
+Write-ActivityLog "TWEAK COMPLETE: #N - Feature Name"
+Write-ActivityLog "ERROR: #N - Error description"  # If error occurs
 ```
 
 ### 6.4 Input Validation
@@ -327,12 +355,12 @@ if ($Choice -match "^\d+$") {
     if ($Num -lt 1 -or $Num -gt 30) {
         Write-Host "  [!] Invalid: Enter 1-30" -ForegroundColor Red
         Start-Sleep -Seconds 1
-        goto MainMenu
+        continue  # Continue in while($true) loop
     }
 } else {
     Write-Host "  [!] Invalid: Numbers only" -ForegroundColor Red
     Start-Sleep -Seconds 1
-    goto MainMenu
+    continue  # Continue in while($true) loop
 }
 ```
 
@@ -509,30 +537,24 @@ goto :menu
 ### 8.2 PowerShell Sins
 
 ```powershell
-❌ goto :label                 # Wrong: PowerShell does not natively support goto
 ✅ while ($true) { ... }       # Correct: Use proper PowerShell loops
-
-❌ exit                        # Wrong: kills terminal
-❌ Close-Host                  # Wrong: kills terminal
-❌ Clear-Host without content  # Wrong: blank screen
 
 ✅ Write-Host "Exiting..."; pause; exit  # Correct
 
-❌ Invoke-Expression script.ps1  # Wrong: security risk
 ✅ & .\script.ps1                # Correct: safe invocation
 
-❌ $ErrorActionPreference = "Stop"  # Wrong: global setting
 ✅ -ErrorAction Stop                # Correct: per-command
 
-❌ if ($_ -strip)                   # Wrong: -strip is NOT a valid operator (causes parse error)
 ✅ if ($_ -ne '')                   # Correct: explicit empty string check
 
-❌ function Log-Activity { ... }    # Wrong: 'Log' is NOT an approved PowerShell verb (PSScriptAnalyzer warning + breaks discoverability)
 ✅ function Write-ActivityLog { ... } # Correct: 'Write' is an approved verb
 
-❌ switch ($x) { 'val' { continue } }   # Wrong: continue inside switch targets the switch, NOT the enclosing while loop
 ✅ switch ($x) { 'val' { $DoRescan = $true } }
    if ($DoRescan) { continue }          # Correct: flag variable breaks out of switch first, then continue targets while
+
+# Feature script extension:
+✅ .ps1 for all features (PowerShell is more flexible than CMD)
+❌ .cmd inside features/ (Limited functionality, harder to maintain)
 ```
 
 ### 8.3 Path & Encoding Sins
@@ -544,10 +566,14 @@ goto :menu
 ❌ ANSI: Avoid unless strictly required for legacy CMD.
 
 ❌ Relative paths: .\script.ps1  # Wrong: breaks from different cwd
-✅ Absolute paths: %BASEDIR%script.ps1  # Correct
+✅ Absolute paths: $PSScriptRoot  # Correct
 
 ❌ Hardcoded paths: C:\GandiWin  # Wrong: not portable
-✅ Dynamic paths: %~dp0 or $PSScriptRoot  # Correct
+✅ Dynamic paths: $PSScriptRoot or $PSScriptRoot\..\..  # Correct
+
+# Feature Script Extension:
+✅ .ps1 inside features/  # Correct: PowerShell is the standard
+❌ .cmd inside features/  # Wrong: Limited functionality
 ```
 
 ---
@@ -588,12 +614,13 @@ goto :menu
 
 ### v3.0 POWER EDITION (Current)
 
-- Full PowerShell-based architecture
+- Full PowerShell-based architecture (.ps1 files for all features)
 - 30 modular features in features/ folder
 - Multi-terminal workflow (4 terminals)
-- Hacker-style ASCII UI
-- Structured logging system
+- Hacker-style ASCII UI via GandiWinUI module
+- Structured logging system to menu.log
 - Windows 10/11 focused
+- PowerShell preferred over CMD for maximum flexibility
 
 ### v2.0 ELITE (Legacy - Deprecated)
 
@@ -640,19 +667,24 @@ exit /b 1
 start "" %PS% -NoExit -ExecutionPolicy Bypass -File "%BASEDIR%script.ps1"
 ```
 
-### Feature Logging (Copy-Paste Ready)
+### Feature Logging (Copy-Paste Ready - PowerShell)
 
-```batch
-echo [%DATE% %TIME%] FEATURE_NAME: Action description >> "%ActivityLog%"
+```powershell
+$LogFile = "$PSScriptRoot\..\..\logs\menu.log"
+$Timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+Add-Content -Path $LogFile -Value "[$Timestamp] [INFO] FEATURE_NAME: Action description"
 ```
 
-### Input Validation (Copy-Paste Ready)
+### Input Validation (Copy-Paste Ready - PowerShell)
 
-```batch
-set /p CHOICE=  Enter choice:
-if "%CHOICE%"=="" goto :menu
-if "%CHOICE%"=="1" goto :option1
-goto :menu
+```powershell
+$Choice = Read-Host "  Enter choice:"
+if ($Choice -match "^\d+$") {
+    $Num = [int]$Choice
+    if ($Num -ge 1 -and $Num -le 30) {
+        # Valid input - process feature
+    }
+}
 ```
 
 ---
@@ -665,14 +697,28 @@ goto :menu
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-03-22  
-**Applies To:** GandiWin v3.0 POWER EDITION  
+**Document Version:** 1.1
+**Last Updated:** 2026-03-23
+**Applies To:** GandiWin v3.0 POWER EDITION
 **Status:** PRODUCTION READY
+
+**Key Changes in v1.1:**
+- Updated to reflect PowerShell (.ps1) as standard for all features
+- Removed CMD-based templates (.cmd is deprecated for features)
+- Updated logging to use menu.log as central log file
+- Clarified UTF-8 BOM encoding requirements
 
 ---
 
 ## 🚨 FINAL WARNING
+
+**STANDARDS TO FOLLOW:**
+
+✅ USE .ps1 for ALL feature scripts (NOT .cmd)
+✅ UTF-8 WITH BOM for scripts with Box Drawing characters
+✅ Use GandiWinUI module for all UI operations
+✅ Log to menu.log using Write-ActivityLog function
+✅ Validate PowerShell version (5.1+) at script start
 
 **VIOLATING THESE RULES WILL CAUSE:**
 

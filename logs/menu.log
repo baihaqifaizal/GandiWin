@@ -43,3 +43,20 @@
 [2026-03-23 00:45:26] [OK] [2_AV_CONFLICT] COMPLETED: Remove Defender Antivirus Only
 [2026-03-23 00:45:26] [INFO] [2_AV_CONFLICT] Launched AV Conflict Scan
 [2026-03-23 00:45:26] [WARN] [2_AV_CONFLICT] No AV registered on system.
+[2026-03-23 01:26:14] [INFO] [3_BLOATWARE] Session started
+[2026-03-23 01:31:00] [INFO] [3_BLOATWARE] Module opened
+[2026-03-23 01:31:05] [INFO] [3_BLOATWARE] Loaded bloatware list: 3 items
+[2026-03-23 01:31:14] [INFO] [3_BLOATWARE] Module opened
+[2026-03-23 01:31:17] [INFO] [3_BLOATWARE] Loaded installed apps: 119 items
+2026-03-23 16:08:20 TWEAK INITIATED: #3 - Bloatware Removal
+2026-03-23 16:11:03 TWEAK INITIATED: #2 - Antivirus Conflict
+[2026-03-23 16:11:03] [INFO] [2_AV_CONFLICT] Launched AV Conflict Scan
+[2026-03-23 16:11:04] [WARN] [2_AV_CONFLICT] No AV registered on system.
+2026-03-23 16:11:20 TWEAK INITIATED: #1 - Thermal Check
+[2026-03-23 16:16:48] [INFO] [4_STARTUP_CTRL] Startup Control module launched
+[2026-03-23 16:17:02] [OK] [4_STARTUP_CTRL] DISABLED: electron.app.Notion at HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+[2026-03-23 16:17:02] [OK] [4_STARTUP_CTRL] DISABLED: EPSDNMON at HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+[2026-03-23 16:17:02] [OK] [4_STARTUP_CTRL] DISABLED: Mem Reduct at HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+[2026-03-23 16:17:02] [OK] [4_STARTUP_CTRL] MAX PERFORMANCE: Disabled 3 startup items
+[2026-03-23 16:17:05] [INFO] [4_STARTUP_CTRL] Startup Control module launched
+[2026-03-23 16:23:49] [INFO] [7_TELEMETRY] Telemetry Disabler module launched

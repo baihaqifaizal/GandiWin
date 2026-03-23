@@ -17,7 +17,7 @@ Set-GandiConsole -Title "GANDIWIN :: CONTROL CENTER"
 $ModulesDir = "$PSScriptRoot\modules"
 $LogsDir = "$PSScriptRoot\logs"
 $FeaturesDir = "$PSScriptRoot\features"
-$ActivityLog = "$LogsDir\tweak_activity.log"
+$ActivityLog = "$LogsDir\menu.log"
 
 if (!(Test-Path $ModulesDir)) { New-Item -ItemType Directory -Path $ModulesDir -Force | Out-Null }
 if (!(Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir -Force | Out-Null }

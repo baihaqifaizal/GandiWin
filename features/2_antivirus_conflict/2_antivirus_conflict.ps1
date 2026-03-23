@@ -22,8 +22,7 @@ $PowerRun = "$WDRDir\PowerRun.exe"
 $ScriptBat = "$WDRDir\Script_Run.bat"
 $FilesBat = "$WDRDir\files_removal.bat"
 $SecApp = "$WDRDir\RemoveSecHealthApp.ps1"
-$DefReg = "$WDRDir\Remove_Defender"
-$SecReg = "$WDRDir\Remove_SecurityComp"
+
 
 function Write-ActivityLog {
     param([string]$Message, [string]$Level = "INFO")
