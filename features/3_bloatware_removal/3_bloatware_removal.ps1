@@ -100,9 +100,9 @@ function Remove-AppItem {
             elseif ($u -notmatch '/S') { $u += ' /S' }
             $parts = $u -split ' ', 2
             $exe = $parts[0].Trim('"')
-            $args = if ($parts.Count -gt 1) { $parts[1] } else { '' }
+            $ExeArgs = if ($parts.Count -gt 1) { $parts[1] } else { '' }
             if (Test-Path $exe) { 
-                $proc = Start-Process $exe $args -Wait -PassThru -ErrorAction SilentlyContinue
+                $proc = Start-Process $exe $ExeArgs -Wait -PassThru -ErrorAction SilentlyContinue
                 $success = ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010)
             }
         }
@@ -137,7 +137,6 @@ function Invoke-ChecklistUI {
         Show-GandiKeyValue -Key "Pilih" -Value $sel -ValueColor "Red"
         Write-Host ""
         
-        $slice = $Items[$Top..($Top + $Vis - 1)]
         for ($i = 0; $i -lt $Half; $i++) {
             $LIdx = $i; $RIdx = $i + $Half
             # Left
@@ -171,11 +170,11 @@ function Invoke-ChecklistUI {
             'LeftArrow' { if ($Cursor -ge $Half) { $Cursor -= $Half } }
             'RightArrow' { if ($Cursor + $Half -lt $Items.Count) { $Cursor += $Half } }
             'Spacebar' { $Checked[$Cursor] = -not $Checked[$Cursor] }
-            'A' { 0..($Items.Count - 1) | % { $Checked[$_] = $true } }
-            'N' { 0..($Items.Count - 1) | % { $Checked[$_] = $false } }
+            'A' { 0..($Items.Count - 1) | ForEach-Object { $Checked[$_] = $true } }
+            'N' { 0..($Items.Count - 1) | ForEach-Object { $Checked[$_] = $false } }
             'Escape' { return }
             'Enter' {
-                $exec = 0..($Items.Count - 1) | ? { $Checked[$_] } | % { $Items[$_] }
+                $exec = 0..($Items.Count - 1) | Where-Object { $Checked[$_] } | ForEach-Object { $Items[$_] }
                 if ($exec.Count -eq 0) { continue }
                 [Console]::Clear(); Show-GandiHeader -Title "KONFIRMASI"; Write-Host "  Hapus $($exec.Count) aplikasi? (YES/NO)"; if ((Read-Host "  CMD") -ne 'YES') { [Console]::Clear(); continue }
                 foreach ($a in $exec) { Write-GandiStatus -Status "WAIT" -Message "Hapus: $($a.Name)"; Remove-AppItem $a $Deep | Out-Null }

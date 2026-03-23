@@ -41,10 +41,10 @@ function Show-Section {
     Write-Host "----------------------------------------" -ForegroundColor DarkGray
 }
 
-function Log-Activity {
-    param([string]$Message)
-    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "[$Timestamp] $Message" | Out-File -FilePath $Script:ActivityLog -Append -Encoding UTF8
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    try { Add-Content -Path $Script:ActivityLog -Value "[$ts] [$Level] [MODULE] $Message" -ErrorAction SilentlyContinue } catch {}
 }
 
 function Show-Success {
@@ -78,7 +78,7 @@ Show-Header "MODULE_NAME - DESCRIPTION"
 Show-Info "Module is running..."
 
 # Example: Log activity
-Log-Activity "MODULE_NAME: Executed"
+Write-ActivityLog "MODULE_NAME: Executed"
 
 Write-Host ""
 Write-Host "================================================================================" -ForegroundColor Green

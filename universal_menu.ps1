@@ -23,9 +23,10 @@ if (!(Test-Path $ModulesDir)) { New-Item -ItemType Directory -Path $ModulesDir -
 if (!(Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir -Force | Out-Null }
 if (!(Test-Path $FeaturesDir)) { New-Item -ItemType Directory -Path $FeaturesDir -Force | Out-Null }
 
-function Log-Activity {
-    param($Message)
-    "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $Message" | Out-File -FilePath $ActivityLog -Append -Encoding UTF8
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    try { Add-Content -Path $ActivityLog -Value "[$ts] [$Level] [UNIVERSAL_MENU] $Message" -ErrorAction SilentlyContinue } catch {}
 }
 
 $Features = @(
@@ -116,7 +117,7 @@ while ($true) {
             $Feature = $Features | Where-Object { $_.Num -eq $Num }
             $FolderName = "$Num`_$($Feature.Name.ToLower().Replace(' ','_'))"
             $ScriptPath = Join-Path $FeaturesDir "$FolderName\$FolderName.ps1"
-            Log-Activity "TWEAK INITIATED: #$Num - $($Feature.Name)"
+            Write-ActivityLog "TWEAK INITIATED: #$Num - $($Feature.Name)"
         
             if (Test-Path $ScriptPath) {
                 Write-GandiStatus -Status "OK" -Message "Executing module $FolderName"

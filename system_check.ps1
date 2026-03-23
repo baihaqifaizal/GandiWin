@@ -19,8 +19,19 @@ if ($PSVersionTable.PSVersion -lt $MinPSVersion) {
 $UIModule = "$PSScriptRoot\modules\GandiWinUI.psm1"
 if (Test-Path $UIModule) { Import-Module $UIModule -Force }
 
-Set-GandiConsole -Title "GANDIWIN :: SYSTEM CHECK"
+# Init log (ATURAN Layer 1)
+if ($PSScriptRoot -ne '') { $ScriptDir = $PSScriptRoot }
+else { $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition }
+$LogFile = "$ScriptDir\logs\menu.log"
+if (!(Test-Path "$ScriptDir\logs")) { New-Item -ItemType Directory -Path "$ScriptDir\logs" -Force | Out-Null }
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    try { Add-Content -Path $LogFile -Value "[$ts] [$Level] [SYSTEM_CHECK] $Message" -ErrorAction SilentlyContinue } catch {}
+}
 
+Set-GandiConsole -Title "GANDIWIN :: SYSTEM CHECK"
+Write-ActivityLog "System Check launched"
 # ============================================================================
 # GATHER SYSTEM INFORMATION
 # ============================================================================
@@ -32,7 +43,6 @@ Start-Sleep -Milliseconds 500
 # OS Information
 Write-GandiStatus -Status "WAIT" -Message "Gathering OS information..."
 $OS = Get-CimInstance Win32_OperatingSystem
-$OSName = $OS.Caption
 $OSBuild = $OS.BuildNumber
 $OSSKU = $OS.OperatingSystemSKU
 $OSArch = (Get-CimInstance Win32_Processor).AddressWidth | Select-Object -First 1
@@ -224,8 +234,7 @@ $InputCmd = Read-Host "  AWAITING COMMAND"
 switch ($InputCmd.ToUpper()) {
     "R" { & $PSCommandPath }
     "S" {
-        $LogFile = "$PSScriptRoot\logs\system_check_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-        if (!(Test-Path "$PSScriptRoot\logs")) { New-Item -ItemType Directory -Path "$PSScriptRoot\logs" | Out-Null }
+        $LogReport = "$ScriptDir\logs\system_check_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
         
         @"
 ================================================================================
@@ -277,9 +286,10 @@ $(foreach ($Disk in $Disks) {
     "Drive $($Disk.DeviceID): $FreeGB GB free of $TotalGB GB ($Percent%)"
 })
 ================================================================================
-"@ | Out-File -FilePath $LogFile -Encoding UTF8
+"@ | Out-File -FilePath $LogReport -Encoding UTF8
         
-        Write-GandiStatus -Status "OK" -Message "Report successfully archived to: $LogFile"
+        Write-ActivityLog "Report saved: $LogReport" "OK"
+        Write-GandiStatus -Status "OK" -Message "Report successfully archived to: $LogReport"
         Start-Sleep -Seconds 2
     }
     "Q" { 

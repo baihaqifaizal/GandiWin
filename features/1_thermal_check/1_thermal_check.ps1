@@ -9,6 +9,18 @@ if ($PSVersionTable.PSVersion -lt $MinPSVersion) {
 $UIModule = "$PSScriptRoot\..\..\modules\GandiWinUI.psm1"
 if (Test-Path $UIModule) { Import-Module $UIModule -Force }
 
+# Init log (ATURAN Layer 1 - ScriptDir fallback)
+if ($PSScriptRoot -ne '') { $ScriptDir = $PSScriptRoot }
+else { $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition }
+$LogFile = "$ScriptDir\..\..\logs\menu.log"
+if (!(Test-Path (Split-Path $LogFile))) { New-Item -ItemType Directory -Path (Split-Path $LogFile) -Force | Out-Null }
+function Write-ActivityLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    try { Add-Content -Path $LogFile -Value "[$ts] [$Level] [1_THERMAL_CHECK] $Message" -ErrorAction SilentlyContinue } catch {}
+}
+Write-ActivityLog "Module launched"
+
 function Get-TempBar {
     param([int]$Temp)
     if ($null -eq $Temp -or $Temp -le 0) { return "...................." }
