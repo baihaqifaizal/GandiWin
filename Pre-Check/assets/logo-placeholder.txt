@@ -1,9 +1,0 @@
-# Logo Placeholder
-# 
-# To add your Gandiwa Academy logo:
-# 1. Place your logo.png file in this assets folder
-# 2. The logo should be: 150x150 pixels (PNG with transparent background recommended)
-# 3. Open template.html and uncomment the img tag:
-#    <!-- <img src="logo.png" alt="Gandiwa Academy"> -->
-#    becomes:
-#    <img src="logo.png" alt="Gandiwa Academy">

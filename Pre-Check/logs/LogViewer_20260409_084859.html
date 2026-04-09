@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GandiWin - System Check Log Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1000px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { text-align: center; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: #fff; padding: 40px; position: relative; }
+        .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>'); opacity: 0.3; }
+        .header h1 { margin: 0; font-size: 32px; text-transform: uppercase; letter-spacing: 3px; position: relative; z-index: 1; font-weight: 700; }
+        .header p { margin: 10px 0 0 0; color: #bdc3c7; font-size: 14px; position: relative; z-index: 1; }
+        
+        .content-wrapper { display: flex; margin: 30px 40px; gap: 20px; }
+        .log-selector { flex: 0 0 250px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; border-left: 4px solid #2c3e50; height: fit-content; }
+        .log-selector label { display: block; margin-bottom: 10px; font-weight: 600; color: #2c3e50; font-size: 14px; }
+        .log-selector select { width: 100%; padding: 10px; border: 2px solid #2c3e50; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer; }
+        .log-selector select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .log-count { margin-top: 10px; font-size: 12px; color: #7f8c8d; }
+        
+        .report-area { flex: 1; }
+        .sys-info { padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; border-left: 4px solid #2c3e50; }
+        .sys-info strong { color: #2c3e50; display: inline-block; min-width: 140px; }
+        .sys-info br { margin: 10px 0; }
+        .section-title { margin: 30px 0 20px; font-size: 20px; color: #2c3e50; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        
+        .log-content { padding: 25px; background: #1e1e1e; border-radius: 10px; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; max-height: 600px; overflow-y: auto; }
+        .log-content::-webkit-scrollbar { width: 8px; }
+        .log-content::-webkit-scrollbar-track { background: #2d2d2d; border-radius: 4px; }
+        .log-content::-webkit-scrollbar-thumb { background: #667eea; border-radius: 4px; }
+        .log-content::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+        
+        .no-log { text-align: center; padding: 40px; color: #7f8c8d; font-size: 16px; }
+        
+        .footer { text-align: center; margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: #ecf0f1; font-size: 13px; }
+        .footer strong { color: #fff; font-size: 16px; display: block; margin-bottom: 8px; }
+        @media print { body { background: #fff; } .container { box-shadow: none; margin: 0; } .log-selector { display: none; } .content-wrapper { display: block; margin: 0; } }
+        @media (max-width: 768px) { .container { margin: 20px; } .content-wrapper { flex-direction: column; margin: 20px; } .sys-info, .log-content { margin-left: 0; margin-right: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GandiWin System Check</h1>
+            <p>System Intelligence & Performance Log Viewer</p>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="log-selector">
+                <label for="logSelect">Log Files:</label>
+                <select id="logSelect" size="8">
+                    <option value="">-- Scanning... --</option>
+                </select>
+                <div class="log-count" id="logCount"></div>
+            </div>
+
+            <div class="report-area">
+                <div id="sysInfo" class="sys-info" style="display: none;"></div>
+                <div class="section-title">Log Content</div>
+                <div id="logContent" class="log-content">
+                    <div class="no-log">Select a log file from the list to view its contents.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>GANDIWIN SYSTEM CHECK</strong>
+            Log viewer generated automatically by GandiWin Terminal.<br>
+            Professional System Intelligence Tool.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const logSelect = document.getElementById('logSelect');
+            const logContent = document.getElementById('logContent');
+            const sysInfo = document.getElementById('sysInfo');
+            const logCountEl = document.getElementById('logCount');
+
+            var LOG_FILES = [{n:'Gandiwin_20260409.log',d:'77u/DQo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KR0FORElXSU4gU1lTVEVNIENIRUNLIC0gUEVSRk9STUFOQ0UgTE9HDQpHZW5lcmF0ZWQ6IDIwMjYtMDQtMDkgMDg6NDM6MDcNCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQoNCltPVkVSVklFV10NCkNvbXB1dGVyIE5hbWU6IEdBTkRJV0EtSFENCk1hbnVmYWN0dXJlcjogTEVOT1ZPDQpNb2RlbDogMjBMNlMwMVEwTg0KDQpbTU9USEVSQk9BUkRdDQpNYW51ZmFjdHVyZXI6IExFTk9WTw0KTW9kZWw6IDIwTDZTMDFRME4NCkJJT1MgRGF0ZTogMjAyNS0wOS0wNg0KQklPUyBWZXJzaW9uOiBOMjRFVDgxVyAoMS41NiApDQpCb290IFR5cGU6IExlZ2FjeQ0KVFBNOiBOb3QgRGV0ZWN0ZWQNCg0KW09QRVJBVElORyBTWVNURU1dDQpPUzogTWljcm9zb2Z0IFdpbmRvd3MgUHJvZmVzc2lvbmFsICg2NC1iaXQpIEJ1aWxkIDIyNjMxICgyM0gyKQ0KQm9vdCBNb2RlOiBMZWdhY3kNClNlY3VyZSBCb290OiBPRkYNCkhWQ0k6IE9GRg0KDQpbUFJPQ0VTU09SXQ0KTW9kZWw6IEludGVsKFIpIENvcmUoVE0pIGk1LTgzNTBVIENQVSBAIDEuNzBHSHoNClZlbmRvcjogSW50ZWwNCkNvcmVzL1RocmVhZHM6IDQvOA0KQmFzZSBDbG9jazogMS41IEdIeg0KTWF4IFR1cmJvOiAxLjkgR0h6IChBdmFpbGFibGUpDQpDdXJyZW50IENsb2NrOiAxLjUgR0h6IChSZWFsLXRpbWUpDQpCb29zdCBNb2RlIChBQyk6IEFnZ3Jlc3NpdmUNCkJvb3N0IE1vZGUgKERDKTogRGlzYWJsZWQNCg0KW1JBTV0NClRvdGFsOiAxNS44NCBHQg0KVXNlZDogNS4zNSBHQg0KVXNhZ2UgUmF0ZTogMzMuNzggJQ0KSGFyZHdhcmUgTG9nczogTm8gRXJyb3JzIERldGVjdGVkDQpTcGVlZDogMjQwMCBNSHoNCk1vZHVsZXM6IDINCg0KW0dSQVBISUNTXQ0KTW9kZWw6IEludGVsKFIpIFVIRCBHcmFwaGljcyA2MjANCkRyaXZlcjogMzEuMC4xMDEuMjEzNQ0KVHlwZTogSW50ZWdyYXRlZA0KTWVtb3J5OiAxMDI0IE1CDQoNCltESVNQTEFZXQ0KUmVzb2x1dGlvbjogMTkyMCB4IDEwODANClJlZnJlc2ggUmF0ZTogNjAgSHoNCkdQVSBNb2RlbDogSW50ZWwoUikgVUhEIEdyYXBoaWNzIDYyMA0KDQpbU1RPUkFHRV0NCk1lZGlhIFR5cGU6IFNTRA0KUGh5c2ljYWwgSGVhbHRoOiBIZWFsdGh5DQoNCltORVRXT1JLXQ0KSW50ZWwoUikgRHVhbCBCYW5kIFdpcmVsZXNzLUFDIDgyNjUNCkROUyBTZXJ2ZXJzOiAyMDguNjcuMjIyLjIyMiwgMjA4LjY3LjIyMC4yMjANCg0KW0JBVFRFUlldDQpDaGFyZ2U6IDczJQ0KU3RhdHVzOiBEaXNjaGFyZ2luZw0KSGVhbHRoIC8gV2VhciBMZXZlbDogTi9BIChGdWxsIENhcCB2cyBEZXNpZ24gQ2FwKQ0KDQpbVEhFUk1BTF0NCkN1cnJlbnQgVGVtcDogMzQuMSBDDQpDUFUgUHJvZmlsZTogTG93IFBvd2VyIChVbHRyYWJvb2svT2ZmaWNlKQ0KU2FmZSBMaW1pdDogVXAgdG8gODUuMCBDDQpTdGF0dXM6IFsgU0FOR0FUIEFNQU4gXQ0KUmVjb21tZW5kYXRpb246IFN1aHUgc2FuZ2F0IGJhaWsuDQoNCltQT1dFUiBQTEFOXQ0KQWN0aXZlIFBsYW46IEJhbGFuY2VkDQpIZWFsdGggUmVjb21tZW5kYXRpb246IE9wdGltYWwgZm9yIEhhcmR3YXJlIExvbmdldml0eS4NCg0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCg0KW1BFUkZPUk1BTkNFIE1FVFJJQ1NdDQpBdmVyYWdlIENQVSBMb2FkICAgICA6IDQuMiAlDQpBdmVyYWdlIFJBTSBVc2FnZSAgICA6IDM1ICUNClJ1bm5pbmcgUHJvY2Vzc2VzICAgIDogMjI0IGJhY2tncm91bmQgcHJvY2Vzc2VzDQoNCltNRU1PUlkgREVUQUlMRURdDQpWaXJ0dWFsIE1lbW9yeSBUb3RhbDogMTcuOSBHQg0KVmlydHVhbCBNZW1vcnkgVXNlZDogMTAuNzIgR0INCkluIFVzZSAoQ29tcHJlc3NlZCk6IDExMDQ5Ljg4IE1CDQpBdmFpbGFibGUgQ29tbWl0dGVkOiAxMDU1My4zOCBNQg0KQ2FjaGVkOiA4My4yMiBNQg0KUGFnZWQgUG9vbDogNTE0LjU5IE1CDQpOb24tUGFnZWQgUG9vbDogMzIwLjA4IE1CDQoNCltQQUdFIEZJTEVdDQpQYWdlIEZpbGUgOiBDOlxwYWdlZmlsZS5zeXMgKDIxMDcgTUIpDQoNCltTVE9SQUdFIFBFUkZPUk1BTkNFXQ0KUmVhZCBTcGVlZDogTi9BDQpXcml0ZSBTcGVlZDogMCBNQi9zDQpBdmcgUmVzcG9uc2UgVGltZTogMjUuMDYgbXMNCkRyaXZlIEM6OiAzMy42NCBHQiBmcmVlIG9mIDE1OS42MSBHQiAoMjElKSBEcml2ZSBEOjogMjAuMjggR0IgZnJlZSBvZiA3OC4xMiBHQiAoMjYlKQ0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCg0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCkdBTkRJV0lOIFNZU1RFTSBDSEVDSyAtIFBFUkZPUk1BTkNFIExPRw0KR2VuZXJhdGVkOiAyMDI2LTA0LTA5IDA4OjQ4OjU3DQo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KDQpbT1ZFUlZJRVddDQpDb21wdXRlciBOYW1lOiBHQU5ESVdBLUhRDQpNYW51ZmFjdHVyZXI6IExFTk9WTw0KTW9kZWw6IDIwTDZTMDFRME4NCg0KW01PVEhFUkJPQVJEXQ0KTWFudWZhY3R1cmVyOiBMRU5PVk8NCk1vZGVsOiAyMEw2UzAxUTBODQpCSU9TIERhdGU6IDIwMjUtMDktMDYNCkJJT1MgVmVyc2lvbjogTjI0RVQ4MVcgKDEuNTYgKQ0KQm9vdCBUeXBlOiBMZWdhY3kNClRQTTogTm90IERldGVjdGVkDQoNCltPUEVSQVRJTkcgU1lTVEVNXQ0KT1M6IE1pY3Jvc29mdCBXaW5kb3dzIFByb2Zlc3Npb25hbCAoNjQtYml0KSBCdWlsZCAyMjYzMSAoMjNIMikNCkJvb3QgTW9kZTogTGVnYWN5DQpTZWN1cmUgQm9vdDogT0ZGDQpIVkNJOiBPRkYNCg0KW1BST0NFU1NPUl0NCk1vZGVsOiBJbnRlbChSKSBDb3JlKFRNKSBpNS04MzUwVSBDUFUgQCAxLjcwR0h6DQpWZW5kb3I6IEludGVsDQpDb3Jlcy9UaHJlYWRzOiA0LzgNCkJhc2UgQ2xvY2s6IDEuNSBHSHoNCk1heCBUdXJibzogMS45IEdIeiAoQXZhaWxhYmxlKQ0KQ3VycmVudCBDbG9jazogMS41IEdIeiAoUmVhbC10aW1lKQ0KQm9vc3QgTW9kZSAoQUMpOiBBZ2dyZXNzaXZlDQpCb29zdCBNb2RlIChEQyk6IERpc2FibGVkDQoNCltSQU1dDQpUb3RhbDogMTUuODQgR0INClVzZWQ6IDMuOTkgR0INClVzYWdlIFJhdGU6IDI1LjE5ICUNCkhhcmR3YXJlIExvZ3M6IE5vIEVycm9ycyBEZXRlY3RlZA0KU3BlZWQ6IDI0MDAgTUh6DQpNb2R1bGVzOiAyDQoNCltHUkFQSElDU10NCk1vZGVsOiBJbnRlbChSKSBVSEQgR3JhcGhpY3MgNjIwDQpEcml2ZXI6IDMxLjAuMTAxLjIxMzUNClR5cGU6IEludGVncmF0ZWQNCk1lbW9yeTogMTAyNCBNQg0KDQpbRElTUExBWV0NClJlc29sdXRpb246IDE5MjAgeCAxMDgwDQpSZWZyZXNoIFJhdGU6IDYwIEh6DQpHUFUgTW9kZWw6IEludGVsKFIpIFVIRCBHcmFwaGljcyA2MjANCg0KW1NUT1JBR0VdDQpNZWRpYSBUeXBlOiBTU0QNClBoeXNpY2FsIEhlYWx0aDogSGVhbHRoeQ0KDQpbTkVUV09SS10NCkludGVsKFIpIER1YWwgQmFuZCBXaXJlbGVzcy1BQyA4MjY1DQpETlMgU2VydmVyczogMjA4LjY3LjIyMi4yMjIsIDIwOC42Ny4yMjAuMjIwDQoNCltCQVRURVJZXQ0KQ2hhcmdlOiA3MSUNClN0YXR1czogRGlzY2hhcmdpbmcNCkhlYWx0aCAvIFdlYXIgTGV2ZWw6IE4vQSAoRnVsbCBDYXAgdnMgRGVzaWduIENhcCkNCg0KW1RIRVJNQUxdDQpDdXJyZW50IFRlbXA6IDM0LjEgQw0KQ1BVIFByb2ZpbGU6IExvdyBQb3dlciAoVWx0cmFib29rL09mZmljZSkNClNhZmUgTGltaXQ6IFVwIHRvIDg1LjAgQw0KU3RhdHVzOiBbIFNBTkdBVCBBTUFOIF0NClJlY29tbWVuZGF0aW9uOiBTdWh1IHNhbmdhdCBiYWlrLg0KDQpbUE9XRVIgUExBTl0NCkFjdGl2ZSBQbGFuOiBCYWxhbmNlZA0KSGVhbHRoIFJlY29tbWVuZGF0aW9uOiBPcHRpbWFsIGZvciBIYXJkd2FyZSBMb25nZXZpdHkuDQoNCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQoNCltQRVJGT1JNQU5DRSBNRVRSSUNTXQ0KQXZlcmFnZSBDUFUgTG9hZCAgICAgOiAyLjkgJQ0KQXZlcmFnZSBSQU0gVXNhZ2UgICAgOiAyNi4yICUNClJ1bm5pbmcgUHJvY2Vzc2VzICAgIDogMjE4IGJhY2tncm91bmQgcHJvY2Vzc2VzDQoNCltNRU1PUlkgREVUQUlMRURdDQpWaXJ0dWFsIE1lbW9yeSBUb3RhbDogMTcuOSBHQg0KVmlydHVhbCBNZW1vcnkgVXNlZDogMTAuNjIgR0INCkluIFVzZSAoQ29tcHJlc3NlZCk6IDEwODkxLjcxIE1CDQpBdmFpbGFibGUgQ29tbWl0dGVkOiAxMTkyNy43NyBNQg0KQ2FjaGVkOiA3NC43IE1CDQpQYWdlZCBQb29sOiA1MTQuMjUgTUINCk5vbi1QYWdlZCBQb29sOiAzMjYuNjcgTUINCg0KW1BBR0UgRklMRV0NClBhZ2UgRmlsZSA6IEM6XHBhZ2VmaWxlLnN5cyAoMjEwNyBNQikNCg0KW1NUT1JBR0UgUEVSRk9STUFOQ0VdDQpSZWFkIFNwZWVkOiBOL0ENCldyaXRlIFNwZWVkOiBOL0ENCkF2ZyBSZXNwb25zZSBUaW1lOiBOL0ENCkRyaXZlIEM6OiAzMy42NCBHQiBmcmVlIG9mIDE1OS42MSBHQiAoMjElKSBEcml2ZSBEOjogMjAuMjggR0IgZnJlZSBvZiA3OC4xMiBHQiAoMjYlKQ0KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCg=='}];
+
+            function populateDropdown() {
+                logSelect.innerHTML = '';
+                if (LOG_FILES.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No log files found';
+                    logSelect.appendChild(option);
+                    logCountEl.textContent = '';
+                    return;
+                }
+
+                LOG_FILES.forEach(function(log, i) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = log.n;
+                    logSelect.appendChild(option);
+                });
+
+                logCountEl.textContent = LOG_FILES.length + ' log file(s) found';
+
+                logSelect.addEventListener('change', function() {
+                    if (this.value !== '') {
+                        displayLog(LOG_FILES[this.value].d, LOG_FILES[this.value].n);
+                    }
+                });
+
+                // Auto-select first log
+                if (LOG_FILES.length > 0) {
+                    logSelect.selectedIndex = 0;
+                    displayLog(LOG_FILES[0].d, LOG_FILES[0].n);
+                }
+            }
+
+            function displayLog(content, filename) {
+                // Decode base64 content
+                let decoded = '';
+                try {
+                    const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+                    decoded = new TextDecoder('utf-8').decode(bytes);
+                } catch(e) {
+                    decoded = 'Error decoding log content';
+                }
+
+                logContent.textContent = decoded;
+                
+                const sysInfoData = extractSysInfo(decoded);
+                if (sysInfoData) {
+                    sysInfo.innerHTML = sysInfoData;
+                    sysInfo.style.display = 'block';
+                } else {
+                    sysInfo.style.display = 'none';
+                }
+            }
+
+            function extractSysInfo(content) {
+                const lines = content.split('\n');
+                let data = {};
+                let inOverview = false;
+                let inPerformance = false;
+                let perfMetrics = [];
+
+                for (let line of lines) {
+                    line = line.trim();
+
+                    if (line.startsWith('[OVERVIEW]')) {
+                        inOverview = true;
+                        inPerformance = false;
+                        continue;
+                    }
+                    if (line.startsWith('[PERFORMANCE METRICS]')) {
+                        inPerformance = true;
+                        inOverview = false;
+                        continue;
+                    }
+                    if (line.startsWith('[') && !line.startsWith('[OVERVIEW]') && !line.startsWith('[PERFORMANCE METRICS]')) {
+                        inOverview = false;
+                        inPerformance = false;
+                    }
+
+                    if (inOverview && line.includes(':')) {
+                        const parts = line.split(':');
+                        const key = parts[0].trim();
+                        const value = parts.slice(1).join(':').trim();
+                        data[key] = value;
+                    }
+
+                    if (inPerformance && line.includes(':')) {
+                        perfMetrics.push(line);
+                    }
+                }
+
+                if (Object.keys(data).length === 0) return null;
+
+                let html = '';
+                if (data['Generated']) html += '<strong>Generated:</strong> ' + data['Generated'] + '<br>';
+                if (data['Computer Name']) html += '<strong>Computer Name:</strong> ' + data['Computer Name'] + '<br>';
+                if (data['Manufacturer']) html += '<strong>Manufacturer:</strong> ' + data['Manufacturer'] + '<br>';
+                if (data['Model']) html += '<strong>Model:</strong> ' + data['Model'] + '<br>';
+                if (data['OS']) html += '<strong>OS:</strong> ' + data['OS'] + '<br>';
+                if (perfMetrics.length > 0) {
+                    html += '<br><strong>Performance Summary:</strong><br>';
+                    perfMetrics.forEach(function(m) {
+                        html += '&nbsp;&nbsp;&nbsp;' + m.replace(/\s+/g, ' ') + '<br>';
+                    });
+                }
+
+                return html;
+            }
+
+            populateDropdown();
+        })();
+    </script>
+</body>
+</html>
