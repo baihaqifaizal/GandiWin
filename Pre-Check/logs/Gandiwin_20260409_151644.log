@@ -1,6 +1,6 @@
 ﻿=============================================================
 GANDIWIN SYSTEM CHECK - PERFORMANCE LOG
-Generated: 2026-04-09 12:46:20
+Generated: 2026-04-09 15:16:44
 =============================================================
 
 [OVERVIEW]
@@ -34,8 +34,8 @@ Boost Mode (DC): Disabled
 
 [RAM]
 Total: 15.84 GB
-Used: 4.98 GB
-Usage Rate: 31.44 %
+Used: 4.48 GB
+Usage Rate: 28.28 %
 Hardware Logs: No Errors Detected
 Speed: 2400 MHz
 Modules: 2
@@ -54,7 +54,8 @@ GPU Model: Intel(R) UHD Graphics 620
 [STORAGE]
 Media Type: SSD
 Physical Health: Healthy
-Drive C:: 35.21 GB free of 159.61 GB (22%) Drive D:: 20.28 GB free of 78.12 GB (26%)
+Drive C:: 34.98 GB free of 159.61 GB (22%)
+Drive D:: 20.28 GB free of 78.12 GB (26%)
 
 [NETWORK]
 Intel(R) Dual Band Wireless-AC 8265
@@ -66,46 +67,48 @@ Status: On AC Power
 Health / Wear Level: N/A
 
 [THERMAL]
-Current Temp: 41.1 C
+Current Temp: 46.1 C
 CPU Profile: Low Power (Ultrabook/Office)
 Safe Limit: Up to 85.0 C
-Status: [ SANGAT AMAN ]
+Status: [ AMAN ]
 
 [POWER PLAN]
 Active Plan: Balanced
 Health Recommendation: Optimal for Hardware Longevity.
 
 =============================================================
-GANDIWIN SYSTEM CHECK REAL TIME PERFORMANCE
+GANDIWIN SYSTEM CHECK - REAL TIME PERFORMANCE
 =============================================================
 
 [PERFORMANCE METRICS]
-Average CPU Load     : 0.9 %
-Average RAM Usage    : 30.3 %
-Running Processes    : 212 background processes
+Average CPU Load     : 0.5 %
+Average RAM Usage    : 30.8 %
+Running Processes    : 221 background processes
+
 [MEMORY DETAILED]
 Virtual Memory Total: 16.9 GB
-Virtual Memory Used: 9.41 GB
-In Use (Compressed): 9356.46 MB
-Available Committed: 11348.69 MB
-Cached: 87.49 MB
-Paged Pool: 376.44 MB
-Non-Paged Pool: 243.77 MB
+Virtual Memory Used: 9.56 GB
+In Use (Compressed): 9942.14 MB
+Available Committed: 11415 MB
+Cached: 95.34 MB
+Paged Pool: 430.79 MB
+Non-Paged Pool: 308.02 MB
 Page File : C:\pagefile.sys (1088 MB)
 
 [STORAGE PERFORMANCE]
-Read Speed: 0 MB/s
-Write Speed: 0.24 MB/s
-Avg Response Time: 0 ms
+Read Speed: 1531.06 MB/s
+Write Speed: 1511.62 MB/s
+Avg Response Time: 0.17 ms
+
 =============================================================
 
-[SERVICES Running Automatic LIST]
+[SERVICES RUNNING AUTOMATIC LIST]
 - AudioEndpointBuilder (Windows Audio Endpoint Builder)
 - Audiosrv (Windows Audio)
 - BFE (Base Filtering Engine)
 - BITS (Background Intelligent Transfer Service)
 - BrokerInfrastructure (Background Tasks Infrastructure Service)
-- CDPUserSvc_5aac2 (Connected Devices Platform User Service_5aac2)
+- CDPUserSvc_5ef03 (Connected Devices Platform User Service_5ef03)
 - ClickToRunSvc (Microsoft Office Click-to-Run Service)
 - CoreMessagingRegistrar (CoreMessaging)
 - cplspcon (Intel(R) Content Protection HDCP Service)
@@ -119,7 +122,6 @@ Avg Response Time: 0 ms
 - EventLog (Windows Event Log)
 - EventSystem (COM+ Event System)
 - FontCache (Windows Font Cache Service)
-- gpsvc (Group Policy Client)
 - IBMPMSVC (Lenovo PM Service)
 - LanmanServer (Server)
 - LanmanWorkstation (Workstation)
@@ -151,6 +153,5 @@ Avg Response Time: 0 ms
 - Wcmsvc (Windows Connection Manager)
 - Winmgmt (Windows Management Instrumentation)
 - WlanSvc (WLAN AutoConfig)
-- WpnUserService_5aac2 (Windows Push Notifications User Service_5aac2)
+- WpnUserService_5ef03 (Windows Push Notifications User Service_5ef03)
 - wscsvc (Security Center)
-

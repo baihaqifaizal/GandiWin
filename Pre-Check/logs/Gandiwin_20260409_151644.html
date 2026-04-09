@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GANDIWIN SYSTEM CHECK</title>
+<style>
+@page {
+    size: 215mm 330mm;
+    margin: 0mm; /* Menghilangkan margin browser & header/footer otomatis */
+}
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 7.8pt; /* Font diperkecil sedikit agar presisi */
+    line-height: 1.2; /* Baris dipepetkan agar ruang vertikal lebih lega */
+    background-color: white;
+    background-image: radial-gradient(#d3d3d3 1px, transparent 1px);
+    background-size: 15px 15px;
+    color: black;
+    margin: 0;
+    padding: 6mm 12.7mm 10mm 12.7mm; /* Ruang kosong atas dikurangi menjadi 6mm */
+    width: 215mm;
+    height: 328mm; /* Paksa lebih kecil 2mm dari tinggi kertas untuk mencegah bocor ke page 2 */
+    overflow: hidden; /* Memaksa memotong kalau ada yang bocor */
+}
+.watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    opacity: 0.12;
+    z-index: -10;
+    pointer-events: none;
+    width: 100%;
+    max-width: 650px;
+}
+.wrapper {
+    position: relative;
+    height: 100%;
+}
+.header pre {
+    font-weight: bold;
+    margin-bottom: 8px; /* Margin atas judul direkatkan */
+}
+.grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 15mm;
+}
+.col {
+    flex: 1;
+}
+.col-right {
+    max-width: 48%;
+}
+pre {
+    font-family: inherit;
+    font-size: inherit;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.hl-yellow { background-color: #FFFF00; color: black; font-weight: bold; padding: 0 3px;}
+.hl-green { background-color: #00FF00; color: black; font-weight: bold; padding: 0 3px;}
+.hl-red { background-color: #FF0000; color: white; font-weight: bold; padding: 0 3px;}
+.hl-cyan { background-color: #00FFFF; color: black; font-weight: bold; padding: 0 3px;}
+.hl-magenta { background-color: #FF00FF; color: white; font-weight: bold; padding: 0 3px;}
+.red-text { color: #cc0000; font-weight: bold; }
+
+.footer {
+    position: absolute;
+    bottom: 0; /* Mengikat kuat ke bawah halaman pertama */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    font-style: italic;
+    font-size: 8pt;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+    <div class="wrapper">
+        
+        <div class="grid">
+            <div class="col">
+                <div class="header">
+<pre>=============================================================
+GANDIWIN SYSTEM CHECK - PERFORMANCE LOG
+=============================================================</pre>
+                </div>
+                <pre><span class='hl-yellow'>[OVERVIEW]</span>
+Computer Name: GANDIWA-HQ
+Manufacturer: LENOVO
+Model: 20L6S01Q0N
+
+<span class='hl-green'>[MOTHERBOARD]</span>
+Manufacturer: LENOVO
+Model: 20L6S01Q0N
+BIOS Date: 2025-09-06
+BIOS Version: N24ET81W (1.56 )
+Boot Type: Legacy
+TPM: Not Detected
+
+<span class='hl-red'>[OPERATING SYSTEM]</span>
+OS: Microsoft Windows Professional (64-bit) Build 22631 (23H2)
+Boot Mode: Legacy
+Secure Boot: OFF
+HVCI: OFF
+
+<span class='hl-cyan'>[PROCESSOR]</span>
+Model: Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
+Vendor: Intel
+Cores/Threads: 4/8
+Base Clock: 1.7 GHz
+Max Turbo: 1.9 GHz (Available)
+Current Clock: 1.7 GHz (Real-time)
+Boost Mode (AC): Aggressive
+Boost Mode (DC): Disabled
+
+<span class='hl-green'>[RAM]</span>
+Total: 15.84 GB
+Used: 4.48 GB
+Usage Rate: 28.28 %
+Hardware Logs: No Errors Detected
+Speed: 2400 MHz
+Modules: 2
+
+<span class='hl-magenta'>[GRAPHICS]</span>
+Model: Intel(R) UHD Graphics 620
+Driver: 31.0.101.2135
+Type: Integrated
+Memory: 1024 MB
+
+<span class='hl-yellow'>[DISPLAY]</span>
+Resolution: 1920 x 1080
+Refresh Rate: 60 Hz
+GPU Model: Intel(R) UHD Graphics 620
+
+<span class='hl-cyan'>[STORAGE]</span>
+Media Type: SSD
+Physical Health: Healthy
+Drive C:: 34.98 GB free of <span class="red-text">159.61 GB</span> (22%)
+Drive D:: 20.28 GB free of <span class="red-text">78.12 GB</span> (26%)
+
+<span class='hl-green'>[NETWORK]</span>
+Intel(R) Dual Band Wireless-AC 8265
+DNS Servers: 208.67.222.222, 208.67.220.220
+
+<span class='hl-magenta'>[BATTERY]</span>
+Charge: 100%
+Status: On AC Power
+Health / Wear Level: N/A
+
+<span class='hl-red'>[THERMAL]</span>
+Current Temp: 46.1 C
+CPU Profile: Low Power (Ultrabook/Office)
+Safe Limit: Up to 85.0 C
+Status: [ AMAN ]
+
+<span class='hl-yellow'>[POWER PLAN]</span>
+Active Plan: Balanced
+Health Recommendation: Optimal for Hardware Longevity.
+
+=============================================================
+GANDIWIN SYSTEM CHECK - REAL TIME PERFORMANCE
+=============================================================
+
+<span class='hl-green'>[PERFORMANCE METRICS]</span>
+Average CPU Load     : 0.5 %
+Average RAM Usage    : 30.8 %
+Running Processes    : 221 background processes</pre>
+            </div>
+            <div class="col col-right">
+                <pre><span class='hl-cyan'>[MEMORY DETAILED]</span>
+Virtual Memory Total: 16.9 GB
+Virtual Memory Used: 9.56 GB
+In Use (Compressed): 9942.14 MB
+Available Committed: 11415 MB
+Cached: 95.34 MB
+Paged Pool: 430.79 MB
+Non-Paged Pool: 308.02 MB
+Page File : C:\pagefile.sys (1088 MB)
+
+<span class='hl-magenta'>[STORAGE PERFORMANCE]</span>
+Read Speed: 1531.06 MB/s
+Write Speed: 1511.62 MB/s
+Avg Response Time: 0.17 ms
+
+=============================================================
+
+<span class='hl-yellow'>[SERVICES RUNNING AUTOMATIC LIST]</span>
+- AudioEndpointBuilder (Windows Audio Endpoint Builder)
+- Audiosrv (Windows Audio)
+- BFE (Base Filtering Engine)
+- BITS (Background Intelligent Transfer Service)
+- BrokerInfrastructure (Background Tasks Infrastructure Service)
+- CDPUserSvc_5ef03 (Connected Devices Platform User Service_5ef03)
+- ClickToRunSvc (Microsoft Office Click-to-Run Service)
+- CoreMessagingRegistrar (CoreMessaging)
+- cplspcon (Intel(R) Content Protection HDCP Service)
+- CryptSvc (Cryptographic Services)
+- DcomLaunch (DCOM Server Process Launcher)
+- DeviceAssociationService (Device Association Service)
+- Dhcp (DHCP Client)
+- DispBrokerDesktopSvc (Display Policy Service)
+- Dnscache (DNS Client)
+- esifsvc (Intel(R) Dynamic Platform and Thermal Framework service)
+- EventLog (Windows Event Log)
+- EventSystem (COM+ Event System)
+- FontCache (Windows Font Cache Service)
+- IBMPMSVC (Lenovo PM Service)
+- LanmanServer (Server)
+- LanmanWorkstation (Workstation)
+- LicenseManager (Windows License Manager Service)
+- LSM (Local Session Manager)
+- mpssvc (Windows Defender Firewall)
+- nsi (Network Store Interface Service)
+- PlugPlay (Plug and Play)
+- Power (Power)
+- ProfSvc (User Profile Service)
+- RpcEptMapper (RPC Endpoint Mapper)
+- RpcSs (Remote Procedure Call (RPC))
+- SamSs (Security Accounts Manager)
+- Schedule (Task Scheduler)
+- SENS (System Event Notification Service)
+- ShellHWDetection (Shell Hardware Detection)
+- Spooler (Print Spooler)
+- StateRepository (State Repository Service)
+- StiSvc (Windows Image Acquisition (WIA))
+- SynTPEnhService (SynTPEnh Caller Service)
+- SysMain (SysMain)
+- SystemEventsBroker (System Events Broker)
+- TextInputManagementService (Text Input Management Service)
+- Themes (Themes)
+- UserManager (User Manager)
+- UsoSvc (Update Orchestrator Service)
+- VeyonService (Veyon Service)
+- W32Time (Windows Time)
+- Wcmsvc (Windows Connection Manager)
+- Winmgmt (Windows Management Instrumentation)
+- WlanSvc (WLAN AutoConfig)
+- WpnUserService_5ef03 (Windows Push Notifications User Service_5ef03)
+- wscsvc (Security Center)</pre>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>$GANDIWIN_SYSTEM_CHECK_V3.0</span>
+            <span>//2026-04-09 15:16:44</span>
+        </div>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            setTimeout(function() { window.print(); }, 800);
+        }
+    </script>
+</body>
+</html>

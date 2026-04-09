@@ -17,7 +17,7 @@ echo ==============================================================
 if "%admin%"=="YES" (
     echo Status: ADMIN MODE
 ) else (
-    echo Status: LIMITED MODE ^(Run as Admin disarankan^)
+    echo Status: LIMITED MODE ^(Run as Admin recommended^)
 )
 echo ==============================================================
 echo.
@@ -49,7 +49,7 @@ if "%c%"=="9" goto MEMDIAG
 if "%c%"=="10" goto ADVBOOT
 if "%c%"=="0" goto END
 
-echo Pilihan tidak valid!
+echo Invalid option!
 pause
 goto MENU
 
@@ -57,7 +57,7 @@ goto MENU
 :: PS1 CHECK - Try system_check.ps1 first
 :: ==============================
 :PS1_CHECK
-set "ps1script=%~dp0system_check.ps1"
+set "ps1script=%~dp0modules\system_check.ps1"
 if not exist "%ps1script%" goto FULLINFO
 
 powershell -NoProfile -Command "exit ($PSVersionTable.PSVersion -lt [Version]'5.1')" 2>nul
@@ -78,7 +78,7 @@ echo   Generated: %DATE% %TIME%
 echo ==============================================================
 echo.
 
-echo Mengumpulkan informasi sistem...
+echo Gathering system information...
 echo.
 
 :: --- OVERVIEW ---
@@ -354,19 +354,19 @@ if %errorlevel% equ 0 (
 
         set ThermalProfile=Standard/Desktop PC
         set ThermalSafeLimit=80.0 C
-        set ThermalStatus=SANGAT AMAN
-        set ThermalNote=Suhu optimal.
+        set ThermalStatus=VERY SAFE
+        set ThermalNote=Optimal temperature.
 
         :: Check Low Power (U/Y/G series, Pentium, Celeron)
         echo !CPUNameThermal! | findstr /R "[0-9]U [0-9]Y [0-9]G Athlon Pentium Celeron" >nul
         if !errorlevel! equ 0 (
             set ThermalProfile=Low Power ^(Ultrabook/Office^)
             set ThermalSafeLimit=85.0 C
-            if !TempRaw! LSS 45 (set ThermalStatus=SANGAT AMAN & set ThermalNote=Suhu sangat baik.)
-            if !TempRaw! GEQ 45 if !TempRaw! LSS 60 (set ThermalStatus=AMAN & set ThermalNote=Suhu wajar untuk kerja ringan.)
-            if !TempRaw! GEQ 60 if !TempRaw! LSS 75 (set ThermalStatus=NORMAL & set ThermalNote=Suhu wajar saat multitasking.)
-            if !TempRaw! GEQ 75 if !TempRaw! LSS 85 (set ThermalStatus=WASPADA & set ThermalNote=Mendekati batas maksimal laptop tipis.)
-            if !TempRaw! GEQ 85 (set ThermalStatus=KRITIS & set ThermalNote=Bahaya Throttling! Cek kipas/pasta termal.)
+            if !TempRaw! LSS 45 (set ThermalStatus=VERY SAFE & set ThermalNote=Excellent temperature.)
+            if !TempRaw! GEQ 45 if !TempRaw! LSS 60 (set ThermalStatus=SAFE & set ThermalNote=Normal temperature for light tasks.)
+            if !TempRaw! GEQ 60 if !TempRaw! LSS 75 (set ThermalStatus=NORMAL & set ThermalNote=Normal temperature during multitasking.)
+            if !TempRaw! GEQ 75 if !TempRaw! LSS 85 (set ThermalStatus=WARNING & set ThermalNote=Approaching maximum limit for thin laptops.)
+            if !TempRaw! GEQ 85 (set ThermalStatus=CRITICAL & set ThermalNote=Throttling Danger! Check fan/thermal paste.)
         )
 
         :: Check High Performance (H/HS/HX/HK series)
@@ -374,20 +374,20 @@ if %errorlevel% equ 0 (
         if !errorlevel! equ 0 (
             set ThermalProfile=High Performance ^(Gaming/Creator^)
             set ThermalSafeLimit=95.0 C
-            if !TempRaw! LSS 50 (set ThermalStatus=SANGAT AMAN & set ThermalNote=Sistem pendingin prima.)
-            if !TempRaw! GEQ 50 if !TempRaw! LSS 65 (set ThermalStatus=AMAN & set ThermalNote=Suhu wajar untuk idle/ringan.)
-            if !TempRaw! GEQ 65 if !TempRaw! LSS 85 (set ThermalStatus=NORMAL & set ThermalNote=Suhu optimal saat gaming/rendering.)
-            if !TempRaw! GEQ 85 if !TempRaw! LSS 95 (set ThermalStatus=WASPADA & set ThermalNote=Sistem bekerja ekstra keras.)
-            if !TempRaw! GEQ 95 (set ThermalStatus=KRITIS & set ThermalNote=Overheat! Waktunya repaste / bersihkan debu.)
+            if !TempRaw! LSS 50 (set ThermalStatus=VERY SAFE & set ThermalNote=Cooling system in prime condition.)
+            if !TempRaw! GEQ 50 if !TempRaw! LSS 65 (set ThermalStatus=SAFE & set ThermalNote=Normal temperature for idle/light use.)
+            if !TempRaw! GEQ 65 if !TempRaw! LSS 85 (set ThermalStatus=NORMAL & set ThermalNote=Optimal temperature during gaming/rendering.)
+            if !TempRaw! GEQ 85 if !TempRaw! LSS 95 (set ThermalStatus=WARNING & set ThermalNote=System is working extra hard.)
+            if !TempRaw! GEQ 95 (set ThermalStatus=CRITICAL & set ThermalNote=Overheat! Time to repaste / clean dust.)
         )
 
         :: Desktop fallback temperature checks
         echo !ThermalProfile! | findstr "Standard" >nul
         if !errorlevel! equ 0 (
-            if !TempRaw! GEQ 45 if !TempRaw! LSS 60 (set ThermalStatus=AMAN & set ThermalNote=Beban kerja standar.)
-            if !TempRaw! GEQ 60 if !TempRaw! LSS 75 (set ThermalStatus=NORMAL & set ThermalNote=Suhu wajar untuk beban berat.)
-            if !TempRaw! GEQ 75 if !TempRaw! LSS 85 (set ThermalStatus=WASPADA & set ThermalNote=Airflow casing mungkin kurang baik.)
-            if !TempRaw! GEQ 85 (set ThermalStatus=KRITIS & set ThermalNote=Bahaya Overheat! Cek heatsink/AIO.)
+            if !TempRaw! GEQ 45 if !TempRaw! LSS 60 (set ThermalStatus=SAFE & set ThermalNote=Standard workload.)
+            if !TempRaw! GEQ 60 if !TempRaw! LSS 75 (set ThermalStatus=NORMAL & set ThermalNote=Normal temperature for heavy load.)
+            if !TempRaw! GEQ 75 if !TempRaw! LSS 85 (set ThermalStatus=WARNING & set ThermalNote=Case airflow might be poor.)
+            if !TempRaw! GEQ 85 (set ThermalStatus=CRITICAL & set ThermalNote=Overheat danger! Check heatsink/AIO.)
         )
 
         echo   CPU Profile    : !ThermalProfile!
@@ -440,7 +440,7 @@ start taskmgr
 start resmon
 start perfmon
 start eventvwr
-echo Tools Monitoring telah dibuka.
+echo Monitoring tools have been opened.
 pause
 goto MENU
 
@@ -453,7 +453,7 @@ start services.msc
 start msconfig
 start SystemPropertiesPerformance.exe
 start diskmgmt.msc
-echo Tools Konfigurasi telah dibuka.
+echo Configuration tools have been opened.
 pause
 goto MENU
 
@@ -461,7 +461,7 @@ goto MENU
 :: 4. SFC SCAN
 :: ==============================
 :SFC
-if "%admin%"=="NO" (echo Butuh hak Administrator! & pause & goto MENU)
+if "%admin%"=="NO" (echo Administrator rights required! & pause & goto MENU)
 sfc /scannow
 pause
 goto MENU
@@ -470,7 +470,7 @@ goto MENU
 :: 5. DISM REPAIR
 :: ==============================
 :DISM
-if "%admin%"=="NO" (echo Butuh hak Administrator! & pause & goto MENU)
+if "%admin%"=="NO" (echo Administrator rights required! & pause & goto MENU)
 DISM /Online /Cleanup-Image /RestoreHealth
 pause
 goto MENU
@@ -479,8 +479,8 @@ goto MENU
 :: 6. CPU BENCHMARK
 :: ==============================
 :CPUBENCH
-echo Menjalankan uji performa CPU (WinSAT)...
-echo Harap tunggu, ini mungkin memakan waktu beberapa menit.
+echo Running CPU performance benchmark (WinSAT)...
+echo Please wait, this may take a few minutes.
 winsat cpuformal
 pause
 goto MENU
@@ -490,10 +490,10 @@ goto MENU
 :: ==============================
 :DRIVERCHECK
 cls
-echo Mencari perangkat dengan Driver Error (Yellow Bang)...
+echo Searching for devices with Driver Error (Yellow Bang)...
 echo --------------------------------------------------------------
 wmic path win32_pnpentity where "ConfigManagerErrorCode <> 0" get Caption, Status /format:table 2>nul
-if %errorlevel% neq 0 echo Tidak ditemukan error pada driver hardware.
+if %errorlevel% neq 0 echo No hardware driver errors found.
 echo --------------------------------------------------------------
 pause
 goto MENU
@@ -502,9 +502,9 @@ goto MENU
 :: 8. CHECK DISK (RESTART)
 :: ==============================
 :CHK
-if "%admin%"=="NO" (echo Butuh hak Administrator! & pause & goto MENU)
-echo Perintah: chkdsk C: /f /r
-set /p confirm=Jadwalkan scan saat restart? (Y/N): 
+if "%admin%"=="NO" (echo Administrator rights required! & pause & goto MENU)
+echo Command: chkdsk C: /f /r
+set /p confirm=Schedule scan on restart? (Y/N): 
 if /I "%confirm%"=="Y" (chkdsk C: /f /r)
 pause
 goto MENU

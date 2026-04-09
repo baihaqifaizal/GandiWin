@@ -15,15 +15,18 @@ if ($PSVersionTable.PSVersion -lt $MinPSVersion) {
     exit 1
 }
 
-# Import The UI Module
-$UIModule = "$PSScriptRoot\modules\GandiWinUI.psm1"
+# Import Modules
+$UIModule = "$PSScriptRoot\GandiWinUI.psm1"
+$ExportModule = "$PSScriptRoot\export_print.psm1"
 if (Test-Path $UIModule) { Import-Module $UIModule -Force }
+if (Test-Path $ExportModule) { Import-Module $ExportModule -Force }
+
+$AppVersion = "GANDIWIN_SYSTEM_CHECK_V3.0"
 
 # Init log (ATURAN Layer 1)
-if ($PSScriptRoot -ne '') { $ScriptDir = $PSScriptRoot }
-else { $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition }
-$LogFile = "$ScriptDir\logs\menu.log"
-if (!(Test-Path "$ScriptDir\logs")) { New-Item -ItemType Directory -Path "$ScriptDir\logs" -Force | Out-Null }
+$WorkspaceRoot = Split-Path -Parent $PSScriptRoot
+$LogFile = "$WorkspaceRoot\logs\menu.log"
+if (!(Test-Path "$WorkspaceRoot\logs")) { New-Item -ItemType Directory -Path "$WorkspaceRoot\logs" -Force | Out-Null }
 function Write-ActivityLog {
     param([string]$Message, [string]$Level = "INFO")
     $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
@@ -225,36 +228,6 @@ while ($true) {
         $RAMSpeed = "$($RAMModules[0].Speed) MHz"
     }
 
-    # Detailed Memory Counters
-    Write-GandiStatus -Status "WAIT" -Message "Gathering detailed memory statistics..."
-    $MemCounters = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
-    $RAMInUseCompressed = "N/A"
-    $RAMAvailableCommitted = "N/A"
-    $RAMCached = "N/A"
-    $RAMPagedPool = "N/A"
-    $RAMNonPagedPool = "N/A"
-    if ($MemCounters) {
-        # In Use (Compressed) - bytes of compressed memory in use
-        if ($MemCounters.CommittedBytes -gt 0) {
-            $RAMInUseCompressed = "$([math]::Round($MemCounters.CommittedBytes / 1MB, 2)) MB"
-        }
-        # Available Committed - KB of memory that can be committed without paging
-        if ($MemCounters.AvailableBytes -gt 0) {
-            $RAMAvailableCommitted = "$([math]::Round($MemCounters.AvailableBytes / 1MB, 2)) MB"
-        }
-        # Cached - bytes of cached memory
-        if ($MemCounters.CacheBytes -gt 0) {
-            $RAMCached = "$([math]::Round($MemCounters.CacheBytes / 1MB, 2)) MB"
-        }
-        # Paged Pool - bytes of paged pool memory
-        if ($MemCounters.PoolPagedBytes -gt 0) {
-            $RAMPagedPool = "$([math]::Round($MemCounters.PoolPagedBytes / 1MB, 2)) MB"
-        }
-        # Non-Paged Pool - bytes of non-paged pool memory
-        if ($MemCounters.PoolNonPagedBytes -gt 0) {
-            $RAMNonPagedPool = "$([math]::Round($MemCounters.PoolNonPagedBytes / 1MB, 2)) MB"
-        }
-    }
 
     # Hardware Logs (Event Viewer)
     Write-GandiStatus -Status "WAIT" -Message "Checking hardware logs..."
@@ -307,40 +280,6 @@ while ($true) {
     }
     catch {}
 
-    # Storage Performance Counters
-    Write-GandiStatus -Status "WAIT" -Message "Gathering storage performance statistics..."
-    $StorageReadSpeed = "N/A"
-    $StorageWriteSpeed = "N/A"
-    $StorageResponseTime = "N/A"
-    try {
-        $DiskPerf = Get-Counter "\PhysicalDisk(_Total)\Disk Read Bytes/sec", "\PhysicalDisk(_Total)\Disk Write Bytes/sec", "\PhysicalDisk(_Total)\Avg. Disk sec/Transfer" -ErrorAction SilentlyContinue
-        if ($DiskPerf -and $DiskPerf.CounterSamples) {
-            $ReadBytes = ($DiskPerf.CounterSamples | Where-Object { $_.Path -like "*Read Bytes*" }).CookedValue
-            $WriteBytes = ($DiskPerf.CounterSamples | Where-Object { $_.Path -like "*Write Bytes*" }).CookedValue
-            $AvgSecTransfer = ($DiskPerf.CounterSamples | Where-Object { $_.Path -like "*Avg. Disk sec*" }).CookedValue
-        
-            if ($ReadBytes -gt 0) {
-                if ($ReadBytes -gt 1GB) {
-                    $StorageReadSpeed = "$([math]::Round($ReadBytes / 1GB, 2)) GB/s"
-                }
-                else {
-                    $StorageReadSpeed = "$([math]::Round($ReadBytes / 1MB, 2)) MB/s"
-                }
-            }
-            if ($WriteBytes -gt 0) {
-                if ($WriteBytes -gt 1GB) {
-                    $StorageWriteSpeed = "$([math]::Round($WriteBytes / 1GB, 2)) GB/s"
-                }
-                else {
-                    $StorageWriteSpeed = "$([math]::Round($WriteBytes / 1MB, 2)) MB/s"
-                }
-            }
-            if ($AvgSecTransfer -gt 0) {
-                $StorageResponseTime = "$([math]::Round($AvgSecTransfer * 1000, 2)) ms"
-            }
-        }
-    }
-    catch {}
 
     # Network Info
     Write-GandiStatus -Status "WAIT" -Message "Gathering network information..."
@@ -439,31 +378,31 @@ while ($true) {
             if ($cpuName -match "\d{3,5}U|\d{3,5}Y|\d{4}G[1-7]|Athlon|Pentium|Celeron") {
                 $ThermalProfile = "Low Power (Ultrabook/Office)"
                 $ThermalSafeLimit = "85.0 C"
-                if ($ThermalRaw -lt 45) { $ThermalStatus = "SANGAT AMAN"; $ThermalNote = "Suhu sangat baik." }
-                elseif ($ThermalRaw -lt 60) { $ThermalStatus = "AMAN"; $ThermalNote = "Suhu wajar untuk kerja ringan." }
-                elseif ($ThermalRaw -lt 75) { $ThermalStatus = "NORMAL"; $ThermalNote = "Suhu wajar saat multitasking." }
-                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "WASPADA"; $ThermalNote = "Mendekati batas maksimal laptop tipis." }
-                else { $ThermalStatus = "KRITIS"; $ThermalNote = "Bahaya Throttling! Cek kipas/pasta termal." }
+                if ($ThermalRaw -lt 45) { $ThermalStatus = "VERY SAFE"; $ThermalNote = "Excellent temperature." }
+                elseif ($ThermalRaw -lt 60) { $ThermalStatus = "SAFE"; $ThermalNote = "Normal temperature for light tasks." }
+                elseif ($ThermalRaw -lt 75) { $ThermalStatus = "NORMAL"; $ThermalNote = "Normal temperature during multitasking." }
+                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "WARNING"; $ThermalNote = "Approaching maximum limit for thin laptops." }
+                else { $ThermalStatus = "CRITICAL"; $ThermalNote = "Throttling Danger! Check fan/thermal paste." }
             }
             # High Performance (Gaming/Creator)
             elseif ($cpuName -match "\d{3,5}H|\d{3,5}HS|\d{3,5}HX|\d{3,5}HK|\d{3,5}XT") {
                 $ThermalProfile = "High Performance (Gaming/Creator)"
                 $ThermalSafeLimit = "95.0 C"
-                if ($ThermalRaw -lt 50) { $ThermalStatus = "SANGAT AMAN"; $ThermalNote = "Sistem pendingin prima." }
-                elseif ($ThermalRaw -lt 65) { $ThermalStatus = "AMAN"; $ThermalNote = "Suhu wajar untuk idle/ringan." }
-                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "NORMAL"; $ThermalNote = "Suhu optimal saat gaming/rendering." }
-                elseif ($ThermalRaw -lt 95) { $ThermalStatus = "WASPADA"; $ThermalNote = "Sistem bekerja ekstra keras." }
-                else { $ThermalStatus = "KRITIS"; $ThermalNote = "Overheat! Waktunya repaste / bersihkan debu." }
+                if ($ThermalRaw -lt 50) { $ThermalStatus = "VERY SAFE"; $ThermalNote = "Cooling system in prime condition." }
+                elseif ($ThermalRaw -lt 65) { $ThermalStatus = "SAFE"; $ThermalNote = "Normal temperature for idle/light use." }
+                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "NORMAL"; $ThermalNote = "Optimal temperature during gaming/rendering." }
+                elseif ($ThermalRaw -lt 95) { $ThermalStatus = "WARNING"; $ThermalNote = "System is working extra hard." }
+                else { $ThermalStatus = "CRITICAL"; $ThermalNote = "Overheat! Time to repaste / clean dust." }
             }
             # Standard / Desktop PC
             else {
                 $ThermalProfile = "Standard/Desktop PC"
                 $ThermalSafeLimit = "80.0 C"
-                if ($ThermalRaw -lt 45) { $ThermalStatus = "SANGAT AMAN"; $ThermalNote = "Suhu optimal." }
-                elseif ($ThermalRaw -lt 60) { $ThermalStatus = "AMAN"; $ThermalNote = "Beban kerja standar." }
-                elseif ($ThermalRaw -lt 75) { $ThermalStatus = "NORMAL"; $ThermalNote = "Suhu wajar untuk beban berat." }
-                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "WASPADA"; $ThermalNote = "Airflow casing mungkin kurang baik." }
-                else { $ThermalStatus = "KRITIS"; $ThermalNote = "Bahaya Overheat! Cek heatsink/AIO." }
+                if ($ThermalRaw -lt 45) { $ThermalStatus = "VERY SAFE"; $ThermalNote = "Optimal temperature." }
+                elseif ($ThermalRaw -lt 60) { $ThermalStatus = "SAFE"; $ThermalNote = "Standard workload." }
+                elseif ($ThermalRaw -lt 75) { $ThermalStatus = "NORMAL"; $ThermalNote = "Normal temperature for heavy load." }
+                elseif ($ThermalRaw -lt 85) { $ThermalStatus = "WARNING"; $ThermalNote = "Case airflow might be poor." }
+                else { $ThermalStatus = "CRITICAL"; $ThermalNote = "Overheat danger! Check heatsink/AIO." }
             }
         }
     }
@@ -664,7 +603,7 @@ while ($true) {
     :MenuLoop while ($true) {
         Write-Host ""
         Write-Host "  ==========================================================================" -ForegroundColor DarkCyan
-        Write-Host "  [R] RECHECK (Cek Ulang)   [E] EXPORT   [Q] QUIT" -ForegroundColor Yellow
+        Write-Host "  [R] RECHECK   [E] EXPORT   [Q] QUIT" -ForegroundColor Yellow
         Write-Host "  ==========================================================================" -ForegroundColor DarkCyan
         Write-Host ""
     
@@ -672,7 +611,7 @@ while ($true) {
     
         switch ($InputCmd.ToUpper()) {
             "R" { 
-                Write-GandiStatus -Status "WAIT" -Message "Menghapus console dan melakukan cek ulang..."
+                Write-GandiStatus -Status "WAIT" -Message "Clearing console and rechecking..."
                 Start-Sleep -Seconds 1
                 Clear-Host
                 break MenuLoop
@@ -680,7 +619,7 @@ while ($true) {
             "E" { 
                 Write-Host ""
                 Write-Host "[*] EXPORTING SYSTEM REPORT..." -ForegroundColor Cyan
-                Write-Host "Mengambil data performa selama 10 detik. Mohon tunggu..." -ForegroundColor Yellow
+                Write-Host "Collecting performance data for 10 seconds. Please wait..." -ForegroundColor Yellow
 
                 $CpuCounterPath = "\Processor(_Total)\% Processor Time"
                 $RamCounterPath = "\Memory\Available MBytes"
@@ -729,7 +668,7 @@ while ($true) {
                 $DeepStorageWrite = "N/A"
                 $DeepStorageResponse = "N/A"
                 try {
-                    Write-Progress -Activity "STORAGE BENCHMARK" -Status "Menjalankan uji beban penyimpanan (Winsat)..."
+                    Write-Progress -Activity "STORAGE BENCHMARK" -Status "Running storage load test (Winsat)..."
                     $SysDrive = $env:SystemDrive.Substring(0, 1)
                     $WinsatOut = winsat disk -drive $SysDrive 2>&1
                     Write-Progress -Activity "STORAGE BENCHMARK" -Completed
@@ -751,7 +690,7 @@ while ($true) {
 
                 $ExportTime = Get-Date -Format 'yyyyMMdd_HHmmss'
                 $ExportTimeDisp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-                $ExportPath = "$ScriptDir\logs\Gandiwin_$ExportTime.log"
+                $ExportPath = "$WorkspaceRoot\logs\Gandiwin_$ExportTime.log"
 
                 # PREPARE STRINGS TO PREVENT IDE PARSER ERRORS IN HERE-STRING
                 $DisksString = ""
@@ -769,12 +708,7 @@ while ($true) {
                     $PageFilesString = ($PageFiles | ForEach-Object { "Page File : $($_.Name) ($($_.AllocatedBaseSize) MB)" }) -join "`r`n"
                 }
             
-                @"
-=============================================================
-GANDIWIN SYSTEM CHECK - PERFORMANCE LOG
-Generated: $ExportTimeDisp
-=============================================================
-
+                $LeftColumn = @"
 [OVERVIEW]
 Computer Name: $CompName
 Manufacturer: $CompManufacturer
@@ -848,14 +782,16 @@ Active Plan: $ActivePlan
 Health Recommendation: $HealthNote
 
 =============================================================
-GANDIWIN SYSTEM CHECK REAL TIME PERFORMANCE
+GANDIWIN SYSTEM CHECK - REAL TIME PERFORMANCE
 =============================================================
 
 [PERFORMANCE METRICS]
 Average CPU Load     : $CpuAverage
 Average RAM Usage    : $RamAverage
 Running Processes    : $TotalProcesses background processes
+"@ 
 
+                $RightColumn = @"
 [MEMORY DETAILED]
 Virtual Memory Total: $VirtualMemTotal GB
 Virtual Memory Used: $VirtualMemUsed GB
@@ -870,15 +806,33 @@ $PageFilesString
 Read Speed: $DeepStorageRead
 Write Speed: $DeepStorageWrite
 Avg Response Time: $DeepStorageResponse
+
+[SERVICES RUNNING AUTOMATIC LIST]
+$ServicesAuto
+"@
+
+                $FullLog = @"
+=============================================================
+GANDIWIN SYSTEM CHECK - PERFORMANCE LOG
+Generated: $ExportTimeDisp
 =============================================================
 
-[SERVICES Running Automatic LIST]
-$ServicesAuto
+$LeftColumn
 
-"@ | Out-File -FilePath $ExportPath -Encoding UTF8
+$RightColumn
+"@
+
+                $FullLog | Out-File -FilePath $ExportPath -Encoding UTF8
+
+                # Memicu eksport HTML Printable via module
+                if (Get-Command Export-GandiWinHTML -ErrorAction SilentlyContinue) {
+                    $LogoFile = "$WorkspaceRoot\assets\logo.png"
+                    Export-GandiWinHTML -LeftColumn $LeftColumn -RightColumn $RightColumn -ExportPath $ExportPath -ExportTimeDisp $ExportTimeDisp -AppVersion $AppVersion -LogoPath $LogoFile
+                }
+
 
                 Write-ActivityLog "Report exported: $ExportPath" "OK"
-                Write-GandiStatus -Status "OK" -Message "Export berhasil! File disimpan di: $ExportPath"
+                Write-GandiStatus -Status "OK" -Message "Export successful! File saved to: $ExportPath"
                 Start-Sleep -Seconds 2
             }
             "Q" { 
