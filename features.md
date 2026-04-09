@@ -1,199 +1,83 @@
-### **FASE 1: FONDASI SOFTWARE & KONFIGURASI 01 sampai 20**
+# GandiWin Features — 12 Metode Komprehensif
 
-## **01 Thermal Check**
+## 01 Remove Bloatware
 
-- **Masalah:** Software tweaks tidak akan berguna jika CPU/GPU terlalu panas (95°C+).
-- **Detil:** Sistem akan memotong kecepatan clock (Throttle) secara paksa untuk mencegah kerusakan. Ini sering disalahartikan sebagai "Windows lemot".
-- **Solusi:** Gunakan **HWMonitor** atau **HWiNFO64**. Jika suhu mendekati 100°C, bersihkan debu, ganti thermal paste, atau naikkan fan curve. _Clean install Windows tidak bisa mengatasi thermal throttling._
+- **Masalah:** Laptop baru penuh aplikasi UWP tidak berguna, Xbox overlay, GameDVR, shell extensions yang memperlambat context menu, dan Quick Access dengan riwayat file corrupt.
+- **Solusi:** Hapus UWP apps secara massal via `Get-AppxPackage -AllUsers | Remove-AppxPackage`. Matikan GameDVR via registry. Bersihkan shell extensions pihak ketiga. Reset Explorer Quick Access history.
+- **Menyerap:** 03 Bloatware Removal, 26 Shell Extensions, 27 Explorer Quick Access, 30 Game Mode Bar
 
-## **02 Antivirus Conflict**
+## 02 Disable Background Services
 
-- **Masalah:** User pasang Windows Defender + Avast + Smadav bersamaan.
-- **Detil:** Dua antivirus akan "sabet menyabet" file saat diakses. Ini membuat proses buka file atau game jadi sangat lambat.
-- **Solusi:** Percaya satu antivirus. Jika pakai Defender, matikan Smadav/Avast. Jika pakai pihak ketiga, matikan Defender total via Registry atau Group Policy.
+- **Masalah:** Windows menjalankan puluhan service di latar belakang yang memakan RAM dan CPU — DiagTrack, DoSvc (Delivery Optimization P2P), Xbox services, Print Spooler (jika tidak ada printer), dan Hibernation yang menghabiskan space SSD.
+- **Solusi:** Stop dan set `Disabled` untuk service non-esensial. Matikan hibernation via `powercfg -h off`. Matikan USB Selective Suspend via registry. Disable Fast Startup.
+- **Menyerap:** 05 Background Services, 08 Delivery Optimization, 14 Hibernation Disable, 24 USB Selective Suspend
 
-## **03 Bloatware Removal**
+## 03 Disable Background Apps
 
-- **Masalah:** Vendor laptop sering memasang aplikasi trial, game demo, dan utilitas duplikatif yang berjalan diam-diam.
-- **Detil:** Aplikasi ini seringkali membuat _scheduled task_ dan service sendiri. Contoh: McAfee Trial, DropBox Promo, Candy Crush, dan aplikasi UWP lainnya.
-- **Solusi:** Gunakan PowerShell command **`Get-AppxPackage -AllUsers | Remove-AppxPackage`** untuk penghapusan massal atau gunakan tools open-source seperti _Bulk Crap Uninstaller_ (BCUninstaller) untuk scan lebih dalam termasuk sisa registry.
+- **Masalah:** App UWP berjalan di background menerima notifikasi. Nagle Algorithm menahan paket game sebelum dikirim (latency). Network Throttling Windows membatasi throughput.
+- **Solusi:** Set `GlobalUserDisabled=1` di BackgroundAccessApplications registry. Tambahkan `TcpNoDelay=1` dan `TcpAckFrequency=1` per interface. Ubah `NetworkThrottlingIndex=FFFFFFFF`. Matikan Activity History dan Advertising ID.
+- **Menyerap:** 06 Background Apps, 19 Network Throttling, 21 Nagle Algorithm
 
-## **04 Startup Control**
+## 04 Disable Task Scheduler
 
-- **Masalah:** Program seperti Spotify, Steam, atau Updater Adobe berjalan saat booting dengan status "High Impact".
-- **Detil:** Mereka "mencuri" bandwidth disk I/O paling keras di detik-detik pertama login, membuat PC terasa lemot saat baru dinyalakan.
-- **Solusi:** Buka **Task Manager > Tab Startup**. Klik kanan > Disable pada aplikasi yang tidak perlu siap sedia. Prioritaskan hanya antivirus dan driver audio.
+- **Masalah:** Windows punya scheduled tasks yang jalan tiba-tiba saat idle — Compatibility Appraiser, CEIP Consolidator, WinSAT, Maps Update — membuat HDD/SSD tiba-tiba sibuk dan CPU naik.
+- **Solusi:** Disable tasks di folder: Application Experience, Customer Experience Improvement Program, Maintenance, Xbox, Shell. Aman untuk di-disable, tidak memengaruhi fungsi utama Windows.
 
-## **05 Background Services**
+## 05 Disable Startup Apps
 
-- **Masalah:** Windows menjalankan puluhan servis yang mungkin tidak kamu butuh (misal: Print Spooler jika tidak punya printer, Fax service, Xbox services).
-- **Detil:** Servis ini "nongkrong" di RAM dan CPU cycles.
-- **Solusi:** Buka **`services.msc`**. Ubah Startup Type menjadi **Disable** atau **Manual** untuk servis yang tidak kritis seperti: _Geolocation Service, Xbox Accessory Management, Parental Controls_.
+- **Masalah:** Spotify, Steam, Updater Adobe, dan sejenisnya mem-bypass startup lewat Registry Run keys dan folder Startup, "mencuri" disk I/O di detik-detik login.
+- **Solusi:** Enumerasi semua startup dari Registry HKCU+HKLM Run, Startup folder User+All Users. Warnai putih (aman di-disable) vs merah (essential: antivirus, driver). User pilih via checklist.
+- **Menyerap:** 04 Startup Control
 
-## **06 Background Apps**
+## 06 Portable Antivirus
 
-- **Masalah:** Berbeda dengan _Startup_, fitur ini mengizinkan aplikasi (khususnya UWP/Store apps seperti Mail, Weather, News) untuk "hidup" di background menerima update notifikasi meski tidak dibuka.
-- **Detil:** Ini makan bandwidth dan CPU cycles untuk hal yang tidak kamu lihat. Fiture ini sering diabaikan padahal sangat boros resource.
-- **Solusi:** Buka **Settings > Apps > Advanced App Settings > Background Apps Permissions**. Set ke **"Let Windows Decide"** (seringkali salah arah) atau lebih baik pilih **"Never"** atau matikan toggle **"Let apps run in background"** secara global jika kamu tidak butuh notifikasi instan dari aplikasi toko.
+- **Masalah:** Dua antivirus aktif bersamaan (misal: Avast + Defender) menyebabkan konflik file scanning yang parah, memperlambat akses file dan launch aplikasi.
+- **Solusi:** Deteksi AV via WMI `SecurityCenter2`. Tampilkan daftar AV terinstall. Disable/uninstall AV konflik. Sediakan panduan portable AV: Malwarebytes Portable, ESET Online Scanner, HitmanPro (no-install).
+- **Menyerap:** 02 Antivirus Conflict
 
-## **07 Telemetry Disabler**
+## 07 Everything Search
 
-- **Masalah:** Servis **`DiagTrack`** dan **`dmwappushservice`** mengirim data ke Microsoft secara real-time.
-- **Detil:** Proses ini aktif menulis log di disk dan menggunakan koneksi internet di background.
-- **Solusi:** Nonaktifkan via **`gpedit.msc`** (Computer Configuration > Administrative Templates > Windows Components > Data Collection and Preview Builds). Atau disable service **`Connected User Experiences and Telemetry`**.
+- **Masalah:** Windows Search (`WSearch`) terus mengindeks seluruh drive, memakan disk I/O konstan. Saat copy file besar, indexing bekerja bersamaan membuat performa turun.
+- **Solusi:** Stop dan disable `WSearch` service. Batasi scope indexing ke System drive saja. Berikan panduan install Everything v1.4 (Voidtools) — pengindeks alternatif yang menggunakan NTFS journal, indexing <1 detik, RAM <5MB.
+- **Menyerap:** 28 Indexing Service
 
-## **08 Delivery Optimization**
+## 08 Apply Visual Effects
 
-- **Masalah:** Windows menggunakan PC-mu sebagai "server" untuk mengirim update ke komputer lain di internet (Peer-to-Peer).
-- **Detil:** Ini makan Upload Bandwidth parah. Saat kamu main game online, ping bisa naik drastis karena Windows diam-diam mengupload update ke tetangga.
-- **Solusi:** Buka **Settings > Windows Update > Advanced Options > Delivery Optimization**. Matikan toggle **"Allow downloads from other PCs"**. Ini menghentikan Windows mencuri bandwidthmu.
+- **Masalah:** Animasi fade/slide Windows, transparansi, bayangan window menambah overhead GPU+CPU, terasa laggy di PC tanpa dedicated GPU. Mouse Pointer Precision (accel) mengganggu akurasi gaming/desain.
+- **Solusi:** Set performance mode visual effect (UserPreferencesMask). Nonaktifkan animasi DWM dan transparansi. Matikan Mouse Pointer Precision (accel curve). Enable GPU HAGS (Hardware-Accelerated GPU Scheduling) untuk GPU modern. Aktifkan MSI Mode Interrupt untuk GPU/NIC.
+- **Menyerap:** 18 MSI Mode Interrupt, 20 GPU HAGS, 22 Visual Effects, 25 Mouse Precision
 
-## **09 Scheduled Tasks**
+## 09 Apply Quick CPU
 
-- **Masalah:** Windows punya jadwal otomatis yang mengganggu, seperti _Compatibility Appraiser_ yang mengecek apakah PC bisa di-upgrade.
-- **Detil:** Task ini sering jalan tiba-tiba saat PC idle, membuat harddisk bising atau CPU naik.
-- **Solusi:** Buka **`taskschd.msc`**. Disable task di folder _Application Experience_ dan _Customer Experience Improvement Program_.
+- **Masalah:** Power Plan "Balanced" membatasi CPU clock saat idle-to-load transition, menyebabkan micro-stutter. Core parking menambah wake-up delay. Spectre/Meltdown patch menurunkan IPC CPU (gaming/rendering).
+- **Solusi:** Aktifkan Ultimate Performance power plan. Unpark semua core CPU. Set minimum processor state 100%. Optimasi pagefile (1.5x-2x RAM). Opsional: Timer Resolution boost, HPET disable, Spectre/Meltdown mitigations off (unsafe, explicit warning).
+- **Menyerap:** 15 Virtual Memory, 16 Spectre Meltdown, 17 CPU Core Unparking, 23 Power Plan
 
-## **10 Disk Clean up**
+## 10 Telemetry
 
-- **Masalah:** File temporary, cache browser, dan log sistem menumpuk memakan space dan memperlambat indeks file.
-- **Detil:** Space yang terlalu penuh (terutama di SSD) memperlambat _write cycle_. Logical errors pada file system membuat Windows "berpikir" lama saat mengakses file.
-- **Solusi:** Jalankan **`cleanmgr /sageset:1`** untuk memilih semua opsi pembersihan, lalu **`cleanmgr /sagerun:1`**. Gunakan **`chkdsk C: /f`** untuk perbaikan file system logika.
+- **Masalah:** `DiagTrack`, `dmwappushservice`, `PcaSvc` terus menulis log dan mengirim data ke Microsoft. Hosts file tidak memblokir endpoint telemetry MS.
+- **Solusi:** Disable service telemetry. Set `AllowTelemetry=0` via Group Policy registry. Matikan CEIP, Error Reporting, App Compat Telemetry. Opsional: blokir endpoint MS telemetry via hosts file. Opsional: bersihkan registry keys MRU dan riwayat shell.
+- **Menyerap:** 07 Telemetry Disabler, 29 Registry Optimization
 
-## **11 NTFS Repair**
+## 11 Disk
 
-- **Masalah:** File System error (bukan bad sector fisik).
-- **Detil:** Korupsi kecil pada $MFT (Master File Table) membuat Windows susah mencari lokasi file, bikin lag saat browsing folder.
-- **Solusi:** Rutin jalankan **`chkdsk C: /f`** (Fix) untuk memperbaiki indeks logika tanpa perlu scan fisik yang lama.
+- **Masalah:** File temporary dan cache menumpuk, file system error ($MFT corrupt), ghost drivers menyebabkan PnP service kerja ekstra saat boot, WinSAT dan disk optimizer tidak pernah dijalankan manual.
+- **Solusi:** Disk Cleanup (cleanmgr). Hapus temp, AppData temp, WER reports. Jadwalkan chkdsk. Jalankan Optimize-Volume (TRIM untuk SSD, defrag untuk HDD). Deteksi dan hapus ghost drivers via `pnputil`. Opsional: sfc /scannow, DISM CheckHealth.
+- **Menyerap:** 10 Disk Cleanup, 11 NTFS Repair, 12 AppData Cleanup, 13 Ghost Drivers
 
-## **12 AppData Cleanup**
+## 12 Memory Management
 
-- **Masalah:** Folder **`C:\Users\...\AppData\Local\Temp`** dan cache Spotify/Discord menumpuk.
-- **Detil:** Bisa mencapai puluhan GB. Folder **`Roaming`** juga bisa penuh konfigurasi software sampah.
-- **Solusi:** Manual hapus isi folder **`%temp%`**, **`prefetch`**, dan cek folder **`AppData`** milik software yang sudah di-uninstall tapi foldernya masih ada.
+- **Masalah:** Pagefile dikelola otomatis Windows (seringkali terfragmentasi, terlalu kecil). RAM penuh membuat sistem freeze karena pagefile yang lambat. Suhu CPU/GPU tidak dipantau padahal thermal throttling sudah terjadi.
+- **Solusi:** Health check: tampilkan info RAM (slot, speed, jenis DDR), suhu thermal zone, status pagefile. Tweaks: optimasi pagefile (1.5x-2x RAM), disable memory compression (opsional), disable paging executive, Large System Cache.
+- **Menyerap:** 01 Thermal Check, 15 Virtual Memory
 
-## **13 Ghost Drivers**
+## 13 Apply Custom Presets
 
-- **Masalah:** Sisa driver printer lama, mouse USB lama, atau HP smartphone driver yang sudah tidak dipakai masih "tinggal".
-- **Detil:** Driver bayangan ini bisa menyebabkan Plug and Play service bekerja ekstra saat booting.
-- **Solusi:** Di CMD ketik **`set devmgr_show_nonpresent_devices=1`**. Lalu di Device Manager klik View > Show Hidden Devices. Uninstall driver yang ikonnya pudar (grayed out).
-
-## **14 Hibernation Disable**
-
-- **Masalah:** File **`hiberfil.sys`** bisa menghabiskan beberapa GB SSD. Fitur Fast Startup sering bikin sistem "tidak fresh".
-- **Detil:** Fast Startup adalah hybrid hibernate, bisa menyebabkan bug dan memakan waktu write disk.
-- **Solusi:** CMD: **`powercfg -h off`**. Ini menghapus file hiberfil.sys dan memaksa sistem melakukan "Cold Boot" yang lebih bersih setiap kali dinyalakan.
-
-## **15 Virtual Memory**
-
-- **Masalah:** Windows mengatur pagefile secara otomatis, seringkali terfragmentasi dan terlalu kecil.
-- **Detil:** Saat RAM penuh, file **`pagefile.sys`** yang lambat membuat PC freeze.
-- **Solusi:** Set manual ukuran Pagefile (Initial & Maximum) sekitar 1.5x - 2x RAM fisik. Taruh di SSD jika ada.
-
-## **16 Disable Spectre & Meltdown Mitigations (Raw Speed)**
-
-- **Detil Teknis:** Patch keamanan CPU (Spectre/Meltdown) memaksa CPU melakukan pengecekan spekulasi instruksi. Ini menurunkan performa mentah (IPC) CPU.
-- **Tweak Kernel:**
-  - Buka Regedit: **`HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`**.
-  - Buat DWORD baru bernama **`FeatureSettingsOverride`**, isi value **`3`**.
-  - Buat DWORD **`FeatureSettingsOverrideMask`**, isi value **`3`**.
-  - _Hasil:_ CPU bekerja tanpa "rem" keamanan. Resiko: Rentan exploit malware, tapi performa kalkulasi naik signifikan.
-
-## **17 CPU Core Unparking**
-
-- **Detil Teknis:** Core CPU "di-park" (tidur) saat idle. Butuh waktu milidetik untuk bangun, menyebabkan micro-stutter.
-- **Tweak Kernel:**
-  - Regedit: **`HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\...`** (Key yang panjang terkait Processor Power Management).
-  - Ubah attribute **`ValueMax`** dan **`ValueMin`** untuk core parking.
-  - Atau gunakan tool kecil seperti _ParkControl_ untuk mengeset "Core Parking" ke 0% (Unparked).
-
-## **18 MSI Mode Interrupt**
-
-- **Detil Teknis:** Defaultnya, GPU/SSD pakai "Line-based interrupt" yang bisa nge-stack. MSI (Message Signaled Interrupts) lebih modern dan efisien.
-- **Tweak Kernel:**
-  - Buka Device Manager > Network Adapters / Display Adapters.
-  - Klik kanan Properties > Details > Location Path.
-  - Cek path **`PCIROOT...`**. Buka Regedit di **`HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\PCI\...`** sesuai path tadi.
-  - Cari key **`Device Parameters\Interrupt Management\MessageSignaledInterruptProperties`**.
-  - Ubah **`MSISupported`** dari **`0`** menjadi **`1`**.
-  - _Hasil:_ Input lag berkurang, latency network & GPU turun.
-
-## **19 Network Throttling**
-
-- **Detil Teknis:** Windows membatasi throughput jaringan untuk memprioritaskan multimedia, tapi seringkali salah kalkulasi.
-- **Tweak Kernel:**
-  - Regedit: **`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`**.
-  - Cari **`NetworkThrottlingIndex`**. Ubah value ke **`FFFFFFFF`** (Hexadecimal).
-  - _Hasil:_ Windows tidak akan "nahan" paket data, ping lebih stabil, download lebih kencang.
-
-## **20 GPU HAGS**
-
-- **Detil Teknis:** CPU biasanya ngatur scheduling GPU. GPU modern (RTX series ke atas) bisa ngurus sendiri lebih cepat.
-- **Tweak Kernel:**
-  - Regedit: **`HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`**.
-  - Buat DWORD **`HwSchMode`**, isi value **`2`**.
-  - Atau aktifkan via Settings > System > Display > Graphics > Change Default Graphics Settings.
-  - _Hasil:_ Beban CPU berkurang, manajemen VRAM lebih efisien, FPS lebih stabil.
-
-## **21 Nagle Algorithm**
-
-- **Masalah:** Windows menahan paket data kecil untuk digabung jadi paket besar (Nagle Algorithm) guna hemat bandwidth.
-- **Detil:** Di gaming, ini buruk. Tombol yang kamu tekan sedikit ditahan sebelum dikirim ke server. Ini terasa "floaty".
-- **Solusi (Registry):**
-  - Regedit: **`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSMQ\Parameters`**.
-  - Buat DWORD **`TcpNoDelay`**, value **`1`**.
-  - Lakukan juga di **`HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\{Interface-ID}`**. Tambahkan DWORD **`TcpAckFrequency`** = **`1`**.
-
-## **22 Visual Effects**
-
-- **Masalah:** Animasi fade, slide, dan shadow di Windows memakan overhead GPU dan CPU.
-- **Detil:** Pada PC tanpa GPU dedicated, animasi ini menyebabkan "laggy" feeling saat membuka/menutup jendela.
-- **Solusi:** Ketik **`sysdm.cpl`** > Tab Advanced > Performance Settings. Pilih **"Adjust for best performance"** atau centang minimalis: _Show thumbnails, Smooth edges of screen fonts_.
-
-## **23 Power Plan**
-
-- **Masalah:** Power Plan "Balanced" seringkali membatasi kecepatan CPU (throttling) untuk hemat daya.
-- **Detil:** CPU sering turun ke clock speed rendah saat beban naik turun, menyebabkan delay.
-- **Solusi:** Aktifkan **"Ultimate Performance"** power plan (hidden) via CMD: **`powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61`**. Set _Minimum Processor State_ ke 100% agar CPU selalu siaga.
-
-## **24 USB Selective Suspend**
-
-- **Masalah:** Windows mematikan daya ke port USB untuk hemat energi, terutama pada laptop.
-- **Detil:** Saat kamu diam sebentar lalu menyentuh mouse, ada jeda 1-2 detik sebelum cursor bergerak karena USB port baru "bangun". Ini sering disalahartikan sebagai mouse lag.
-- **Solusi:** Buka **Control Panel > Hardware and Sound > Power Options > Change plan settings > Change advanced power settings**. Buka **USB Settings > USB selective suspend setting**. Set menjadi **Disabled**. Ini membuat mouse/keyboard selalu siaga tanpa jeda.
-
-## **25 Mouse Precision**
-
-- **Masalah:** Fitur aksesibilitas yang secara default nyala, memproses gerakan mouse untuk "menghaluskan"nya.
-- **Detil:** Fitur "Enhance Pointer Precision" menambah lapisan kalkulasi antara gerakan tangan dan cursor di layar. Untuk desainer/gamer, ini terasa "floaty" atau tidak akurat.
-- **Solusi:** Buka **Control Panel > Mouse > Pointer Options**. **Uncheck** "Enhance pointer precision". Lalu di **Control Panel > Ease of Access > Make the keyboard easier to use**, pastikan **uncheck** "Turn on Filter Keys". Ini menghapus delay software pada input.
-
-## **26 Shell Extensions**
-
-- **Masalah:** Menu klik kanan lambat karena banyak entri dari software lama (misal: Open with Notepad++, Upload to Dropbox, Scan with AV).
-- **Detil:** Windows harus load library (.dll) dari software tersebut setiap kali menu konteks dibuka.
-- **Solusi:** Gunakan freeware **ShellExView**. Disable extension yang statusnya "No" di kolom "Microsoft Approved" atau yang tidak perlu.
-
-## **27 Explorer Quick Access**
-
-- **Masalah:** File Explorer default menampilkan folder yang sering dibuka di "Quick Access".
-- **Detil:** Jika ada file yang corrupt atau lokasi jaringan yang sudah tidak bisa diakses di riwayat Quick Access, File Explorer akan "freeze" sebentar setiap kali dibuka sambil menunggu _timeout_.
-- **Solusi:** Buka **File Explorer > View > Options**. Pada bagian "Privacy", **Uncheck** "Show recently used files in Quick Access" dan "Show frequently used folders in Quick Access". Klik **Clear** File Explorer History. Ini membuat folder membuka instan tanpa loading riwayat.
-
-## **28 Indexing Service**
-
-- **Masalah:** **`Windows Search`** mengindex seluruh file di PC, memakan disk I/O terus menerus.
-- **Detil:** Saat kamu mendownload file besar atau copy data, indexing ikut bekerja keras di belakang.
-- **Solusi:** Matikan indexing di drive Data (D:/E:), biarkan hanya di drive System (C:). Atau stop service **`WSearch`** total jika kamu jarang mencari file.
-
-## **29 Registry Optimization**
-
-- **Masalah:** Setelah install/uninstall software berulang kali, registry menjadi bengkak dengan _invalid keys_ dan _broken links_.
-- **Detil:** Windows harus memuat database Registry ke memori saat boot. Ukuran registry yang besar memperlambat proses ini.
-- **Solusi:** Gunakan tools terpercaya untuk menghapus _invalid entries_, atau secara manual bersihkan key **`HKEY_LOCAL_MACHINE\SOFTWARE`** dan **`HKCU\SOFTWARE`** dari sisa software yang sudah di-uninstall.
-
-## **30 Game Mode Bar**
-
-- **Masalah:** Windows merekam gameplay di background (DVR) untuk fitur "Replay".
-- **Detil:** Fitur ini makan resource HDD/SSD I/O dan GPU secara diam-diam.
-- **Solusi:** Matikan total di Settings > Gaming. Atau uninstall via PowerShell: **`Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage`**.
+- **Fungsi:** Master trigger yang menjalankan kombinasi modul 1-12 berurutan.
+- **Preset tersedia:**
+  - **Gaming PC:** Modul 1, 2, 3, 5, 8, 9 — remove bloat + disable BG + visual FX + CPU tweak
+  - **Office / Work PC:** Modul 2, 3, 4, 5, 7, 10, 11 — disable BG + tasks + search + telemetry + disk
+  - **Privacy First:** Modul 4, 5, 6, 10 — disable startup + ganti AV + block telemetry
+  - **Full Optimization:** Semua modul 1-12 berurutan
+  - **Maintenance Rutin:** Modul 4, 11, 12 — task + disk + memory check
+  - **Custom:** User pilih sendiri kombinasi modul via checklist

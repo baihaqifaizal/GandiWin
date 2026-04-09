@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Report - Gandiwa Academy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { text-align: center; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: #fff; padding: 40px; position: relative; }
+        .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>'); opacity: 0.3; }
+        .header img { max-width: 120px; margin-bottom: 15px; position: relative; z-index: 1; }
+        .header h1 { margin: 0; font-size: 32px; text-transform: uppercase; letter-spacing: 3px; position: relative; z-index: 1; font-weight: 700; }
+        .header p { margin: 10px 0 0 0; color: #bdc3c7; font-size: 14px; position: relative; z-index: 1; }
+        .sys-info { margin: 30px 40px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; border-left: 4px solid #2c3e50; }
+        .sys-info strong { color: #2c3e50; display: inline-block; min-width: 140px; }
+        .sys-info br { margin: 10px 0; }
+        .section-title { margin: 30px 40px 20px; font-size: 20px; color: #2c3e50; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        table { width: calc(100% - 80px); margin: 0 40px 40px; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 18px; text-align: center; border: 1px solid #e0e0e0; font-size: 15px; }
+        th { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: #fff; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e8f4f8; transition: all 0.3s ease; }
+        .metric-name { font-weight: 600; text-align: left; background-color: #ecf0f1 !important; color: #2c3e50; }
+        .before { color: #e74c3c; font-weight: bold; font-size: 16px; }
+        .after { color: #27ae60; font-weight: bold; font-size: 18px; }
+        .improvement { font-size: 12px; color: #27ae60; margin-top: 5px; }
+        .footer { text-align: center; margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: #ecf0f1; font-size: 13px; }
+        .footer strong { color: #fff; font-size: 16px; display: block; margin-bottom: 8px; }
+        @media print { body { background: #fff; } .container { box-shadow: none; margin: 0; } }
+        @media (max-width: 768px) { .container { margin: 20px; } .sys-info, table { margin-left: 20px; margin-right: 20px; width: calc(100% - 40px); } th, td { padding: 12px; font-size: 13px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- <img src="logo.png" alt="Gandiwa Academy"> -->
+            <h1>Gandiwa Academy</h1>
+            <p>System Optimization & Diagnostic Report</p>
+        </div>
+        
+        <div class="sys-info">
+            <strong>Device Model:</strong> 20L6S01Q0N <br>
+            <strong>Processor:</strong> 20L6S01Q0N <br>
+            <strong>Date:</strong> 09 April 2026
+        </div>
+
+        <div class="section-title">Performance Comparison</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Performance Metric</th>
+                    <th>Before Optimization</th>
+                    <th>After Optimization</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="metric-name">Average CPU Load</td>
+                    <td class="before">2 %</td>
+                    <td class="after">0.1 %</td>
+                </tr>
+                <tr>
+                    <td class="metric-name">Average RAM Usage</td>
+                    <td class="before">42.1 %</td>
+                    <td class="after">42 %</td>
+                </tr>
+                <tr>
+                    <td class="metric-name">Background Processes</td>
+                    <td class="before">197 background processes</td>
+                    <td class="after">194 background processes</td>
+                </tr>
+                <tr>
+                    <td class="metric-name">In Use (Compressed)</td>
+                    <td class="before">10830.42 MB</td>
+                    <td class="after">10885.32 MB</td>
+                </tr>
+                <tr>
+                    <td class="metric-name">Storage Read Speed</td>
+                    <td class="before">N/A</td>
+                    <td class="after">N/A</td>
+                </tr>
+                <tr>
+                    <td class="metric-name">Storage Write Speed</td>
+                    <td class="before">0.24 MB/s</td>
+                    <td class="after">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <strong>GANDIWA ACADEMY</strong>
+            Report generated automatically by GandiWin System Terminal.<br>
+            Dilaksanakan secara profesional oleh Mas Boy.
+        </div>
+    </div>
+</body>
+</html>
+

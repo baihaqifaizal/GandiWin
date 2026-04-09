@@ -1,0 +1,5 @@
+[2026-04-09 02:23:49] [INFO] [SYSTEM_CHECK] System Check launched
+[2026-04-09 02:26:07] [INFO] [SYSTEM_CHECK] System Check launched
+[2026-04-09 02:26:44] [OK] [SYSTEM_CHECK] Before log saved: D:\04_DEVELOPMENT\GandiWin\Pre-Check\logs\before.log
+[2026-04-09 02:27:56] [INFO] [SYSTEM_CHECK] System Check launched
+[2026-04-09 02:28:37] [OK] [SYSTEM_CHECK] After log saved: D:\04_DEVELOPMENT\GandiWin\Pre-Check\logs\after.log

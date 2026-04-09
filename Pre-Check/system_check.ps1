@@ -643,54 +643,48 @@ Start-Sleep -Milliseconds 150
 Show-GandiKeyValue "Health Recommendation" $HealthNote "White" "Cyan"
 
 # ============================================================================
-# MENU OPTIONS
+# MENU OPTIONS - BEFORE/AFTER OPTIMIZATION WORKFLOW
 # ============================================================================
 
+# Pastikan folder logs dan assets terdeteksi
+if (!(Test-Path "$ScriptDir\logs")) { New-Item -ItemType Directory -Path "$ScriptDir\logs" -Force | Out-Null }
+$AssetTemplate = "$ScriptDir\assets\template.html"
+
 Write-Host ""
-Write-Host "  ================================================================" -ForegroundColor DarkCyan
-Write-Host "  [R] REFRESH SCAN     [S] SAVE REPORT     [Q] DEACTIVATE TERMINAL" -ForegroundColor Yellow
-Write-Host "  ================================================================" -ForegroundColor DarkCyan
+Write-Host "  ==========================================================================" -ForegroundColor DarkCyan
+Write-Host "  [B] EXPORT BEFORE LOG   [A] EXPORT AFTER & PRINT REPORT   [Q] DEACTIVATE" -ForegroundColor Yellow
+Write-Host "  ==========================================================================" -ForegroundColor DarkCyan
 Write-Host ""
 
 $InputCmd = Read-Host "  AWAITING COMMAND"
 
 switch ($InputCmd.ToUpper()) {
-    "R" { & $PSCommandPath }
-    "S" {
+    "B" { 
         # ============================================================================
-        # DEEP SCAN: 10-SECOND AVERAGE MEASUREMENT (ONLY ON SAVE REPORT)
+        # LOGIKA BEFORE - Deep Scan dan Save to before.log
         # ============================================================================
         Write-Host ""
-        Write-Host "[*] INITIATING DEEP DIAGNOSTIC SCAN..." -ForegroundColor Cyan
-        Write-Host "Mengambil data rata-rata performa selama 10 detik. Mohon tunggu..." -ForegroundColor Yellow
+        Write-Host "[*] INITIATING BEFORE OPTIMIZATION SCAN..." -ForegroundColor Cyan
+        Write-Host "Mengambil data performa sebelum optimasi. Mohon tunggu..." -ForegroundColor Yellow
 
         $CpuCounterPath = "\Processor(_Total)\% Processor Time"
         $RamCounterPath = "\Memory\Available MBytes"
-
         $Samples = @()
 
-        # Looping 10 detik dengan Progress Bar keren
+        # Looping 10 detik dengan Progress Bar
         for ($i = 1; $i -le 10; $i++) {
-            Write-Progress -Activity "DEEP SYSTEM DIAGNOSTIC" -Status "Analyzing System Stability & Load... ($i/10 seconds)" -PercentComplete ($i * 10)
-            
-            # Ambil 1 sampel setiap detik
+            Write-Progress -Activity "BEFORE OPTIMIZATION SCAN" -Status "Collecting baseline data... ($i/10 seconds)" -PercentComplete ($i * 10)
             $Sample = Get-Counter -Counter $CpuCounterPath, $RamCounterPath -SampleInterval 1 -MaxSamples 1 -ErrorAction SilentlyContinue
             if ($Sample) { $Samples += $Sample }
         }
+        Write-Progress -Activity "BEFORE OPTIMIZATION SCAN" -Completed
 
-        # Tutup Progress Bar setelah selesai
-        Write-Progress -Activity "DEEP SYSTEM DIAGNOSTIC" -Completed
-
-        # ============================================================================
-        # KALKULASI HASIL RATA-RATA
-        # ============================================================================
+        # Kalkulasi hasil rata-rata
         try {
-            # Kalkulasi CPU
             $CpuValues = $Samples | ForEach-Object { $_.CounterSamples | Where-Object Path -like "*processor*" | Select-Object -ExpandProperty CookedValue }
             $CpuAvgRaw = ($CpuValues | Measure-Object -Average).Average
             $CpuAverage = "$([math]::Round($CpuAvgRaw, 1)) %"
 
-            # Kalkulasi RAM
             $RamAvailableValues = $Samples | ForEach-Object { $_.CounterSamples | Where-Object Path -like "*memory*" | Select-Object -ExpandProperty CookedValue }
             $RamAvailableAvgMB = ($RamAvailableValues | Measure-Object -Average).Average
             $TotalRamMB = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB
@@ -705,7 +699,7 @@ switch ($InputCmd.ToUpper()) {
 
         $TotalProcesses = (Get-Process).Count
 
-        # Collect detailed RAM metrics during deep scan
+        # Collect detailed metrics
         $DeepMemCounters = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
         $DeepRAMInUseCompressed = "N/A"
         $DeepRAMAvailableCommitted = "N/A"
@@ -713,24 +707,13 @@ switch ($InputCmd.ToUpper()) {
         $DeepRAMPagedPool = "N/A"
         $DeepRAMNonPagedPool = "N/A"
         if ($DeepMemCounters) {
-            if ($DeepMemCounters.CommittedBytes -gt 0) {
-                $DeepRAMInUseCompressed = "$([math]::Round($DeepMemCounters.CommittedBytes / 1MB, 2)) MB"
-            }
-            if ($DeepMemCounters.AvailableBytes -gt 0) {
-                $DeepRAMAvailableCommitted = "$([math]::Round($DeepMemCounters.AvailableBytes / 1MB, 2)) MB"
-            }
-            if ($DeepMemCounters.CacheBytes -gt 0) {
-                $DeepRAMCached = "$([math]::Round($DeepMemCounters.CacheBytes / 1MB, 2)) MB"
-            }
-            if ($DeepMemCounters.PoolPagedBytes -gt 0) {
-                $DeepRAMPagedPool = "$([math]::Round($DeepMemCounters.PoolPagedBytes / 1MB, 2)) MB"
-            }
-            if ($DeepMemCounters.PoolNonPagedBytes -gt 0) {
-                $DeepRAMNonPagedPool = "$([math]::Round($DeepMemCounters.PoolNonPagedBytes / 1MB, 2)) MB"
-            }
+            if ($DeepMemCounters.CommittedBytes -gt 0) { $DeepRAMInUseCompressed = "$([math]::Round($DeepMemCounters.CommittedBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.AvailableBytes -gt 0) { $DeepRAMAvailableCommitted = "$([math]::Round($DeepMemCounters.AvailableBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.CacheBytes -gt 0) { $DeepRAMCached = "$([math]::Round($DeepMemCounters.CacheBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.PoolPagedBytes -gt 0) { $DeepRAMPagedPool = "$([math]::Round($DeepMemCounters.PoolPagedBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.PoolNonPagedBytes -gt 0) { $DeepRAMNonPagedPool = "$([math]::Round($DeepMemCounters.PoolNonPagedBytes / 1MB, 2)) MB" }
         }
 
-        # Collect detailed Storage metrics during deep scan
         $DeepStorageRead = "N/A"
         $DeepStorageWrite = "N/A"
         $DeepStorageResponse = "N/A"
@@ -740,36 +723,23 @@ switch ($InputCmd.ToUpper()) {
                 $DeepReadBytes = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Read Bytes*" }).CookedValue
                 $DeepWriteBytes = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Write Bytes*" }).CookedValue
                 $DeepAvgSecTransfer = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Avg. Disk sec*" }).CookedValue
-                
+
                 if ($DeepReadBytes -gt 0) {
-                    if ($DeepReadBytes -gt 1GB) {
-                        $DeepStorageRead = "$([math]::Round($DeepReadBytes / 1GB, 2)) GB/s"
-                    } else {
-                        $DeepStorageRead = "$([math]::Round($DeepReadBytes / 1MB, 2)) MB/s"
-                    }
+                    $DeepStorageRead = if ($DeepReadBytes -gt 1GB) { "$([math]::Round($DeepReadBytes / 1GB, 2)) GB/s" } else { "$([math]::Round($DeepReadBytes / 1MB, 2)) MB/s" }
                 }
                 if ($DeepWriteBytes -gt 0) {
-                    if ($DeepWriteBytes -gt 1GB) {
-                        $DeepStorageWrite = "$([math]::Round($DeepWriteBytes / 1GB, 2)) GB/s"
-                    } else {
-                        $DeepStorageWrite = "$([math]::Round($DeepWriteBytes / 1MB, 2)) MB/s"
-                    }
+                    $DeepStorageWrite = if ($DeepWriteBytes -gt 1GB) { "$([math]::Round($DeepWriteBytes / 1GB, 2)) GB/s" } else { "$([math]::Round($DeepWriteBytes / 1MB, 2)) MB/s" }
                 }
-                if ($DeepAvgSecTransfer -gt 0) {
-                    $DeepStorageResponse = "$([math]::Round($DeepAvgSecTransfer * 1000, 2)) ms"
-                }
+                if ($DeepAvgSecTransfer -gt 0) { $DeepStorageResponse = "$([math]::Round($DeepAvgSecTransfer * 1000, 2)) ms" }
             }
         }
         catch {}
 
-        Write-Host "[+] Deep Scan Selesai! Menyimpan laporan..." -ForegroundColor Green
-        Start-Sleep -Milliseconds 500
-
-        $LogReport = "$ScriptDir\logs\system_check_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-        
+        # Save BEFORE log
+        $LogPath = "$ScriptDir\logs\before.log"
         @"
 ================================================================================
-GANDIWIN SYSTEM CHECK REPORT
+GANDIWIN SYSTEM CHECK - BEFORE OPTIMIZATION
 Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 ================================================================================
 
@@ -847,12 +817,12 @@ Health Recommendation: $HealthNote
 
 ================================================================================
 
-[PERFORMANCE METRICS (DEEP SCAN)]
+[PERFORMANCE METRICS (BEFORE OPTIMIZATION)]
 Average CPU Load     : $CpuAverage
 Average RAM Usage    : $RamAverage
 Running Processes    : $TotalProcesses background processes
 
-[MEMORY DETAILED (DEEP SCAN)]
+[MEMORY DETAILED (BEFORE OPTIMIZATION)]
 Virtual Memory Total: $VirtualMemTotal GB
 Virtual Memory Used: $VirtualMemUsed GB
 In Use (Compressed): $DeepRAMInUseCompressed
@@ -868,7 +838,7 @@ $(if ($PageFiles) {
     }
 } else { "None / Disabled" })
 
-[STORAGE PERFORMANCE (DEEP SCAN)]
+[STORAGE PERFORMANCE (BEFORE OPTIMIZATION)]
 Read Speed: $DeepStorageRead
 Write Speed: $DeepStorageWrite
 Avg Response Time: $DeepStorageResponse
@@ -879,16 +849,191 @@ $(foreach ($Disk in $Disks) {
     "Drive $($Disk.DeviceID): $FreeGB GB free of $TotalGB GB ($Percent%)"
 })
 ================================================================================
-"@ | Out-File -FilePath $LogReport -Encoding UTF8
-        
-        Write-ActivityLog "Report saved: $LogReport" "OK"
-        Write-GandiStatus -Status "OK" -Message "Report successfully archived to: $LogReport"
+"@ | Out-File -FilePath $LogPath -Encoding UTF8
+
+        Write-ActivityLog "Before log saved: $LogPath" "OK"
+        Write-GandiStatus -Status "OK" -Message "BEFORE data secured to logs\before.log"
         Start-Sleep -Seconds 2
+    }
+    "A" { 
+        # ============================================================================
+        # LOGIKA AFTER & GENERATE HTML REPORT
+        # ============================================================================
+        $LogBefore = "$ScriptDir\logs\before.log"
+        $LogAfter = "$ScriptDir\logs\after.log"
+        
+        if (!(Test-Path $LogBefore)) {
+            Write-Host ""
+            Write-Host "[!] Peringatan: before.log belum ada! Jalankan [B] dulu sebelum [A]." -ForegroundColor Red
+            Start-Sleep -Seconds 3
+            return
+        }
+
+        Write-Host ""
+        Write-Host "[*] INITIATING AFTER OPTIMIZATION SCAN..." -ForegroundColor Cyan
+        Write-Host "Mengambil data performa setelah optimasi. Mohon tunggu..." -ForegroundColor Yellow
+
+        $CpuCounterPath = "\Processor(_Total)\% Processor Time"
+        $RamCounterPath = "\Memory\Available MBytes"
+        $Samples = @()
+
+        # Looping 10 detik dengan Progress Bar
+        for ($i = 1; $i -le 10; $i++) {
+            Write-Progress -Activity "AFTER OPTIMIZATION SCAN" -Status "Collecting post-optimization data... ($i/10 seconds)" -PercentComplete ($i * 10)
+            $Sample = Get-Counter -Counter $CpuCounterPath, $RamCounterPath -SampleInterval 1 -MaxSamples 1 -ErrorAction SilentlyContinue
+            if ($Sample) { $Samples += $Sample }
+        }
+        Write-Progress -Activity "AFTER OPTIMIZATION SCAN" -Completed
+
+        # Kalkulasi hasil rata-rata
+        try {
+            $CpuValues = $Samples | ForEach-Object { $_.CounterSamples | Where-Object Path -like "*processor*" | Select-Object -ExpandProperty CookedValue }
+            $CpuAvgRaw = ($CpuValues | Measure-Object -Average).Average
+            $CpuAverage = "$([math]::Round($CpuAvgRaw, 1)) %"
+
+            $RamAvailableValues = $Samples | ForEach-Object { $_.CounterSamples | Where-Object Path -like "*memory*" | Select-Object -ExpandProperty CookedValue }
+            $RamAvailableAvgMB = ($RamAvailableValues | Measure-Object -Average).Average
+            $TotalRamMB = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB
+            $RamUsedAvgMB = $TotalRamMB - $RamAvailableAvgMB
+            $RamUsageAvgPercent = [math]::Round(($RamUsedAvgMB / $TotalRamMB) * 100, 1)
+            $RamAverage = "$RamUsageAvgPercent %"
+        }
+        catch {
+            $CpuAverage = "N/A"
+            $RamAverage = "N/A"
+        }
+
+        $TotalProcesses = (Get-Process).Count
+
+        # Collect detailed metrics
+        $DeepMemCounters = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
+        $DeepRAMInUseCompressed = "N/A"
+        $DeepRAMAvailableCommitted = "N/A"
+        $DeepRAMCached = "N/A"
+        $DeepRAMPagedPool = "N/A"
+        $DeepRAMNonPagedPool = "N/A"
+        if ($DeepMemCounters) {
+            if ($DeepMemCounters.CommittedBytes -gt 0) { $DeepRAMInUseCompressed = "$([math]::Round($DeepMemCounters.CommittedBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.AvailableBytes -gt 0) { $DeepRAMAvailableCommitted = "$([math]::Round($DeepMemCounters.AvailableBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.CacheBytes -gt 0) { $DeepRAMCached = "$([math]::Round($DeepMemCounters.CacheBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.PoolPagedBytes -gt 0) { $DeepRAMPagedPool = "$([math]::Round($DeepMemCounters.PoolPagedBytes / 1MB, 2)) MB" }
+            if ($DeepMemCounters.PoolNonPagedBytes -gt 0) { $DeepRAMNonPagedPool = "$([math]::Round($DeepMemCounters.PoolNonPagedBytes / 1MB, 2)) MB" }
+        }
+
+        $DeepStorageRead = "N/A"
+        $DeepStorageWrite = "N/A"
+        $DeepStorageResponse = "N/A"
+        try {
+            $DeepDiskPerf = Get-Counter "\PhysicalDisk(_Total)\Disk Read Bytes/sec", "\PhysicalDisk(_Total)\Disk Write Bytes/sec", "\PhysicalDisk(_Total)\Avg. Disk sec/Transfer" -ErrorAction SilentlyContinue
+            if ($DeepDiskPerf -and $DeepDiskPerf.CounterSamples) {
+                $DeepReadBytes = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Read Bytes*" }).CookedValue
+                $DeepWriteBytes = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Write Bytes*" }).CookedValue
+                $DeepAvgSecTransfer = ($DeepDiskPerf.CounterSamples | Where-Object { $_.Path -like "*Avg. Disk sec*" }).CookedValue
+
+                if ($DeepReadBytes -gt 0) {
+                    $DeepStorageRead = if ($DeepReadBytes -gt 1GB) { "$([math]::Round($DeepReadBytes / 1GB, 2)) GB/s" } else { "$([math]::Round($DeepReadBytes / 1MB, 2)) MB/s" }
+                }
+                if ($DeepWriteBytes -gt 0) {
+                    $DeepStorageWrite = if ($DeepWriteBytes -gt 1GB) { "$([math]::Round($DeepWriteBytes / 1GB, 2)) GB/s" } else { "$([math]::Round($DeepWriteBytes / 1MB, 2)) MB/s" }
+                }
+                if ($DeepAvgSecTransfer -gt 0) { $DeepStorageResponse = "$([math]::Round($DeepAvgSecTransfer * 1000, 2)) ms" }
+            }
+        }
+        catch {}
+
+        # Save AFTER log
+        $LogAfterPath = "$ScriptDir\logs\after.log"
+        @"
+================================================================================
+GANDIWIN SYSTEM CHECK - AFTER OPTIMIZATION
+Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+================================================================================
+
+[PERFORMANCE METRICS (AFTER OPTIMIZATION)]
+Average CPU Load     : $CpuAverage
+Average RAM Usage    : $RamAverage
+Running Processes    : $TotalProcesses background processes
+
+[MEMORY DETAILED (AFTER OPTIMIZATION)]
+Virtual Memory Total: $VirtualMemTotal GB
+Virtual Memory Used: $VirtualMemUsed GB
+In Use (Compressed): $DeepRAMInUseCompressed
+Available Committed: $DeepRAMAvailableCommitted
+Cached: $DeepRAMCached
+Paged Pool: $DeepRAMPagedPool
+Non-Paged Pool: $DeepRAMNonPagedPool
+
+[STORAGE PERFORMANCE (AFTER OPTIMIZATION)]
+Read Speed: $DeepStorageRead
+Write Speed: $DeepStorageWrite
+Avg Response Time: $DeepStorageResponse
+$(foreach ($Disk in $Disks) {
+    $FreeGB = [math]::Round($Disk.FreeSpace / 1GB, 2)
+    $TotalGB = [math]::Round($Disk.Size / 1GB, 2)
+    $Percent = [math]::Round(($Disk.FreeSpace / $Disk.Size) * 100, 0)
+    "Drive $($Disk.DeviceID): $FreeGB GB free of $TotalGB GB ($Percent%)"
+})
+================================================================================
+"@ | Out-File -FilePath $LogAfterPath -Encoding UTF8
+
+        Write-ActivityLog "After log saved: $LogAfterPath" "OK"
+        Write-GandiStatus -Status "WAIT" -Message "Menyatukan data dan merender HTML Report..."
+        
+        # Baca template HTML
+        if (Test-Path $AssetTemplate) {
+            $HtmlContent = Get-Content $AssetTemplate -Raw
+            
+            # Ekstrak data menggunakan regex sederhana
+            function Get-Metric ([string]$Content, [string]$Pattern) {
+                if ($Content -match $Pattern) { return $matches[1].Trim() }
+                return "N/A"
+            }
+            
+            $TextB = Get-Content $LogBefore -Raw
+            $TextA = Get-Content $LogAfterPath -Raw
+
+            # Replace variable di HTML
+            $HtmlContent = $HtmlContent.Replace('{{MODEL}}', (Get-Metric $TextB "Model\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{CPU_NAME}}', (Get-Metric $TextB "Model\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{DATE}}', (Get-Date -Format "dd MMMM yyyy"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_CPU}}', (Get-Metric $TextB "Average CPU Load\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_CPU}}', (Get-Metric $TextA "Average CPU Load\s*:\s*(.*)"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_RAM}}', (Get-Metric $TextB "Average RAM Usage\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_RAM}}', (Get-Metric $TextA "Average RAM Usage\s*:\s*(.*)"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_PROC}}', (Get-Metric $TextB "Running Processes\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_PROC}}', (Get-Metric $TextA "Running Processes\s*:\s*(.*)"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_COMPRESSED}}', (Get-Metric $TextB "In Use \(Compressed\)\s*:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_COMPRESSED}}', (Get-Metric $TextA "In Use \(Compressed\)\s*:\s*(.*)"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_READ}}', (Get-Metric $TextB "Read Speed:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_READ}}', (Get-Metric $TextA "Read Speed:\s*(.*)"))
+            
+            $HtmlContent = $HtmlContent.Replace('{{B_WRITE}}', (Get-Metric $TextB "Write Speed:\s*(.*)"))
+            $HtmlContent = $HtmlContent.Replace('{{A_WRITE}}', (Get-Metric $TextA "Write Speed:\s*(.*)"))
+
+            # Save ke HTML
+            $ReportPath = "$ScriptDir\logs\Optimization_Report_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+            $HtmlContent | Out-File -FilePath $ReportPath -Encoding UTF8
+            
+            Write-GandiStatus -Status "OK" -Message "Report siap! Membuka browser untuk dicetak..."
+            Start-Sleep -Seconds 2
+            Invoke-Item $ReportPath
+        } else {
+            Write-Host "[ERROR] Template HTML tidak ditemukan di assets/template.html" -ForegroundColor Red
+            Start-Sleep -Seconds 3
+        }
     }
     "Q" { 
         Invoke-GandiTypewriter -Text "TERMINATING CONNECTION..." -DelayMs 10 -Color Red
-        pause
+        Start-Sleep -Seconds 1
         exit
     }
-    default { Write-GandiStatus -Status "FAIL" -Message "INVALID COMMAND SEQUENCE."; Start-Sleep -Seconds 1 }
+    default { 
+        Write-GandiStatus -Status "FAIL" -Message "INVALID COMMAND SEQUENCE."
+        Start-Sleep -Seconds 1 
+    }
 }

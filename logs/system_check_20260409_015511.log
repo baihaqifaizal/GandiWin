@@ -1,0 +1,101 @@
+﻿================================================================================
+GANDIWIN SYSTEM CHECK REPORT
+Generated: 2026-04-09 01:55:11
+================================================================================
+
+[OVERVIEW]
+Computer Name: GANDIWA-HQ
+Manufacturer: LENOVO
+Model: 20L6S01Q0N
+
+[MOTHERBOARD]
+Manufacturer: LENOVO
+Model: 20L6S01Q0N
+BIOS Date: 2025-09-06
+BIOS Version: N24ET81W (1.56 )
+Boot Type: Legacy
+TPM: Not Detected
+
+[OPERATING SYSTEM]
+OS: Microsoft Windows Professional (64-bit) Build 22631 (23H2)
+Boot Mode: Legacy
+Secure Boot: OFF
+HVCI: OFF
+
+[PROCESSOR]
+Model: Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
+Vendor: Intel
+Cores/Threads: 4/8
+Base Clock: 1.7 GHz
+Max Turbo: 1.9 GHz (Available)
+Current Clock: 1.7 GHz (Real-time)
+Boost Mode (AC): Aggressive
+Boost Mode (DC): Disabled
+
+[RAM]
+Total: 15.84 GB
+Used: 6.73 GB
+Usage Rate: 42.49 %
+Hardware Logs: No Errors Detected
+Speed: 2400 MHz
+Modules: 2
+
+Virtual Memory Total: 17.04 GB
+Virtual Memory Used: 11.65 GB
+
+[RAM DETAILED (DEEP SCAN)]
+In Use (Compressed): 11935.56 MB
+Available Committed: 9284.56 MB
+Cached: 124.35 MB
+Paged Pool: 490.02 MB
+Non-Paged Pool: 296.43 MB
+
+[PAGE FILE]
+Page File : C:\pagefile.sys (1230 MB)
+
+[GRAPHICS]
+Model: Intel(R) UHD Graphics 620
+Driver: 31.0.101.2135
+Type: Integrated
+Memory: 1024 MB
+
+[DISPLAY]
+Resolution: 1920 x 1080
+Refresh Rate: 60 Hz
+GPU Model: Intel(R) UHD Graphics 620
+
+[STORAGE]
+Media Type: SSD
+Physical Health: Healthy
+
+[STORAGE PERFORMANCE (DEEP SCAN)]
+Read Speed: N/A
+Write Speed: 0.02 MB/s
+Avg Response Time: 0.25 ms
+Drive C:: 34.74 GB free of 159.61 GB (22%) Drive D:: 20.28 GB free of 78.12 GB (26%)
+
+[NETWORK]
+Intel(R) Dual Band Wireless-AC 8265
+DNS Servers: 208.67.222.222, 208.67.220.220
+
+[BATTERY]
+Charge: 96%
+Status: On AC Power
+Health / Wear Level: N/A (Full Cap vs Design Cap)
+
+[THERMAL]
+Current Temp: 50.1 C
+CPU Profile: Low Power (Ultrabook/Office)
+Safe Limit: Up to 85.0 C
+Status: [ AMAN ]
+Recommendation: Suhu wajar untuk kerja ringan.
+
+[POWER PLAN]
+Active Plan: Balanced
+Health Recommendation: Optimal for Hardware Longevity.
+
+[PERFORMANCE METRICS (10-SECOND AVERAGE DEEP SCAN)]
+Average CPU Load     : 2.1 %
+Average RAM Usage    : 41.8 %
+Running Processes    : 203 background processes
+================================================================================

@@ -90,7 +90,7 @@ if ($PSVersionTable.PSVersion -lt $MinPSVersion) {
 
 ```
 Terminal 1: system_check.ps1    → Hardware/OS overview    (Color: Green)
-Terminal 2: universal_menu.ps1  → Menu 30 fitur           (Color: Cyan)
+Terminal 2: universal_menu.ps1  → Menu 12 fitur + 1 preset (Color: Cyan)
 Terminal 3: log_viewer.ps1      → Daemon log monitor       (Color: Yellow)
 Terminal 4: Feature execution   → Per-fitur, dinamis       (Color: per kategori)
 ```
@@ -105,9 +105,9 @@ GandiWin/
 ├── system_check.ps1          # MUST
 ├── universal_menu.ps1        # MUST
 ├── log_viewer.ps1            # MUST
-├── features/                 # MUST: 30 folder fitur
-│   ├── 1_thermal_check/
-│   │   └── 1_thermal_check.ps1   # ← ekstensi WAJIB .ps1
+├── features/                 # MUST: 12 folder fitur + 1 preset
+│   ├── 1_remove_bloatware/
+│   │   └── 1_remove_bloatware.ps1   # ← ekstensi WAJIB .ps1
 │   └── ... (format: {num}_{slug}/)
 ├── modules/ (file file penting dan berguna untuk keseluruhan program)
 │   └── GandiWinUI.psm1       # MUST
@@ -119,44 +119,27 @@ GandiWin/
 
 - Format: `{number}_{slug_lowercase_underscore}/`
 - Script WAJIB sama nama dengan folder, ekstensi `.ps1`
-- Nomor 1–30, tanpa leading zero di nama folder
+- Nomor 1–13, tanpa leading zero di nama folder
 
 ---
 
-## 6. 30 FITUR
+## 6. 12 FITUR + 1 PRESET
 
-| #   | Feature Name          | Slug                       | Category    | Color    |
-| --- | --------------------- | -------------------------- | ----------- | -------- |
-| 01  | Thermal Check         | `1_thermal_check`          | PERFORMANCE | Green    |
-| 02  | Antivirus Conflict    | `2_antivirus_conflict`     | PERFORMANCE | Green    |
-| 03  | Bloatware Removal     | `3_bloatware_removal`      | PERFORMANCE | Green    |
-| 04  | Startup Control       | `4_startup_control`        | PERFORMANCE | Green    |
-| 05  | Background Services   | `5_background_services`    | PERFORMANCE | Green    |
-| 06  | Background Apps       | `6_background_apps`        | PERFORMANCE | Green    |
-| 07  | Telemetry Disabler    | `7_telemetry_disabler`     | PRIVACY     | Blue     |
-| 08  | Delivery Optimization | `8_delivery_optimization`  | PRIVACY     | Blue     |
-| 09  | Scheduled Tasks       | `9_scheduled_tasks`        | PRIVACY     | Blue     |
-| 10  | Disk Cleanup          | `10_disk_cleanup`          | PRIVACY     | Blue     |
-| 11  | NTFS Repair           | `11_ntfs_repair`           | MAINTENANCE | Magenta  |
-| 12  | AppData Cleanup       | `12_appdata_cleanup`       | MAINTENANCE | Magenta  |
-| 13  | Ghost Drivers         | `13_ghost_drivers`         | MAINTENANCE | Magenta  |
-| 14  | Hibernation Disable   | `14_hibernation_disable`   | MAINTENANCE | Magenta  |
-| 15  | Virtual Memory        | `15_virtual_memory`        | MAINTENANCE | Magenta  |
-| 16  | Spectre Meltdown      | `16_spectre_meltdown`      | SECURITY    | Red      |
-| 17  | CPU Core Unparking    | `17_cpu_core_unparking`    | SECURITY    | Red      |
-| 18  | MSI Mode Interrupt    | `18_msi_mode_interrupt`    | SECURITY    | Red      |
-| 19  | Network Throttling    | `19_network_throttling`    | SECURITY    | Red      |
-| 20  | GPU HAGS              | `20_gpu_hags`              | GAMING      | Yellow   |
-| 21  | Nagle Algorithm       | `21_nagle_algorithm`       | GAMING      | Yellow   |
-| 22  | Visual Effects        | `22_visual_effects`        | GAMING      | Yellow   |
-| 23  | Power Plan            | `23_power_plan`            | GAMING      | Yellow   |
-| 24  | USB Selective Suspend | `24_usb_selective_suspend` | GAMING      | Yellow   |
-| 25  | Mouse Precision       | `25_mouse_precision`       | GAMING      | Yellow   |
-| 26  | Shell Extensions      | `26_shell_extensions`      | UI          | DarkCyan |
-| 27  | Explorer Quick Access | `27_explorer_quick_access` | UI          | DarkCyan |
-| 28  | Indexing Service      | `28_indexing_service`      | UI          | DarkCyan |
-| 29  | Registry Optimization | `29_registry_optimization` | UI          | DarkCyan |
-| 30  | Game Mode Bar         | `30_game_mode_bar`         | UI          | DarkCyan |
+| #   | Feature Name           | Slug                       | Category    | Menyerap Lama  |
+| --- | ---------------------- | -------------------------- | ----------- | -------------- |
+| 01  | Remove Bloatware       | `1_remove_bloatware`       | CLEANUP     | 03, 26, 27, 30 |
+| 02  | Disable BG Services    | `2_disable_bg_services`    | PERFORMANCE | 05, 08, 14, 24 |
+| 03  | Disable BG Apps        | `3_disable_bg_apps`        | PERFORMANCE | 06, 19, 21     |
+| 04  | Disable Task Scheduler | `4_disable_task_scheduler` | PRIVACY     | 09             |
+| 05  | Disable Startup Apps   | `5_disable_startup_apps`   | PERFORMANCE | 04             |
+| 06  | Portable Antivirus     | `6_portable_antivirus`     | SECURITY    | 02             |
+| 07  | Everything Search      | `7_everything_search`      | UI          | 28             |
+| 08  | Apply Visual Effects   | `8_apply_visual_effects`   | GAMING/UI   | 18, 20, 22, 25 |
+| 09  | Apply Quick CPU        | `9_apply_quick_cpu`        | PERFORMANCE | 15, 16, 17, 23 |
+| 10  | Telemetry              | `10_telemetry`             | PRIVACY     | 07, 29         |
+| 11  | Disk                   | `11_disk`                  | MAINTENANCE | 10, 11, 12, 13 |
+| 12  | Memory Management      | `12_memory_management`     | PERFORMANCE | 01, 15         |
+| 13  | Apply Custom Presets   | `13_apply_custom_presets`  | MASTER      | 1-12           |
 
 ---
 
@@ -448,4 +431,4 @@ Saat menerjemahkan tool GUI/C#/C++/Batch dari GitHub ke PowerShell CLI:
 
 ---
 
-**Document Version:** 2.0 | **Last Updated:** 2026-03-23 | **Applies To:** GandiWin v3.0 POWER EDITION
+**Document Version:** 3.0 | **Last Updated:** 2026-03-24 | **Applies To:** GandiWin v3.0 POWER EDITION — 12 METODE EDITION
